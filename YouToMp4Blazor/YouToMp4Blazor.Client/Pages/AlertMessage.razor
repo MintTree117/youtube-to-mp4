@@ -1,0 +1,13 @@
+<div class="alert alert-message @Page.AlertCss">
+    <div class="text-dark">
+        @Page.AlertMessage
+    </div>
+    <button class="btn ms-2 text-dark @Page.AlertButtonCss" @onclick="Page.CloseAlert">
+        <i class="fa fa-x text-dark"></i>
+    </button>
+</div>
+
+@code 
+{
+    [Parameter] public PageBase Page { get; set; } = default!;
+}

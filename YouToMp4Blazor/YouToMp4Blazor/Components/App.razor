@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" href="dlTubeBlazor.styles.css"/>
+        <link rel="stylesheet" href="app.css"/>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+<Routes/>
+<script src="_framework/blazor.web.js"></script>
+<script>
+    function downloadFileFromStream(filename, content) {
+        // Create a Blob from the content
+        var blob = new Blob([content], { type: "application/octet-stream" });
+        
+        // Create an URL for the blob
+        var url = window.URL.createObjectURL(blob);
+        
+        // Create an anchor (<a>) element
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        
+        // Append anchor to body, trigger click, and remove it
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }
+</script>
+</body>
+
+</html>

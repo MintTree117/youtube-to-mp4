@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "https:dev": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SpecialKeys": "",
+        "SpecialAdminKey": ""
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "https://coral-app-anp75.ondigitalocean.app/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "SpecialKeys": "",
+        "SpecialAdminKey": ""
+      }
+    }
+  }
+}

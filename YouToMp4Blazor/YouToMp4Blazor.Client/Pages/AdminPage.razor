@@ -1,0 +1,35 @@
+@inherits PageBase
+@rendermode InteractiveWebAssembly
+@page "/AdminDashboard"
+
+<!-- Container -->
+<div class="d-flex flex-column align-items-stretch" style="max-width: 600px;">
+    
+    <!-- Title -->
+    <h1 class="text-center mb-4">DlTube Admin</h1>
+    
+    <!-- Divider -->
+    <div class="divider mb-4"></div>
+    
+    <!-- Loading Message -->
+    <LoadingMessage Page="@this"/>
+    
+    <!-- Upload -->
+    <textarea class="mb-2 form-control" placeholder="Paste Json Keys Here..." @bind="_keyString"></textarea>
+    <button class="btn btn-primary mb-2 form-control" @onclick="@( async () => await OnClickPutJson() )">Upload Json Keys</button>
+
+    <!-- Fetch -->
+    <input class="form-control mb-2" type="text" @bind="_connectionString" placeholder="Database Connection String..."/>
+    <button class="btn btn-primary mb-2 form-control" @onclick="@( async () => await OnClickPostDb() )">Fetch DB Keys</button>
+    
+    <!-- Divider -->
+    <div class="divider mb-4 mt-2"></div>
+    
+    <!-- Print Server Records -->
+    <button class="btn btn-primary mb-2 form-control" @onclick="@( async () => await OnClickUpdateDbRecords() )">Print Server Records</button>
+    <!-- Update DB -->
+    <button class="btn btn-primary mb-2 form-control" @onclick="@( async () => await PrintServerRecords() )">Update DB Records</button>
+    
+    <!-- Alert Message -->
+    <AlertMessage Page="@this"></AlertMessage>
+</div>
