@@ -28,8 +28,8 @@ builder.Services.AddCors( options =>
 
 builder.Services.AddLogging();
 
-builder.Services.AddHttpClient( "client", c => { c.BaseAddress = new Uri( HttpConsts.DevelopmentAddress ); } );
-//builder.Services.AddHttpClient( "client", c => { c.BaseAddress = new Uri( HttpConsts.ProductionAddress ); } );
+//builder.Services.AddHttpClient( "client", c => { c.BaseAddress = new Uri( HttpConsts.DevelopmentAddress ); } );
+builder.Services.AddHttpClient( "client", c => { c.BaseAddress = new Uri( HttpConsts.ProductionAddress ); } );
 // TODO: Figure out why environment variables arent being read here
 // builder.Services.AddHttpClient( "client", c => { c.BaseAddress = new Uri( builder.Configuration[ "BaseAddress" ] ?? string.Empty ); } );
 builder.Services.AddBlazoredLocalStorage();
@@ -61,7 +61,7 @@ else
     app.UseHsts(); // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

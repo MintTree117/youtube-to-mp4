@@ -14,6 +14,9 @@
     <!-- Loading Message -->
     <LoadingMessage Page="@this"/>
     
+    <!-- Env Vars Button -->
+    <button class="btn btn-primary mb-2 form-control" @onclick="@( async () => await OnClickEnvVars() )">Re-fetch Env Vars</button>
+    
     <!-- Upload -->
     <textarea class="mb-2 form-control" placeholder="Paste Json Keys Here..." @bind="_keyString"></textarea>
     <button class="btn btn-primary mb-2 form-control" @onclick="@( async () => await OnClickPutJson() )">Upload Json Keys</button>

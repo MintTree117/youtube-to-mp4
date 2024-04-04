@@ -7,6 +7,10 @@ public static class AuthEndpoints
 {
     public static void MapAuthenticatorEndpoints( this IEndpointRouteBuilder app )
     {
+        app.MapPost( HttpConsts.GetEnvVars, ( AuthManager auth ) => auth.LoadEnvironmentVariables()
+            ? Results.Ok( true )
+            : Results.Problem() );
+        
         app.MapPost( HttpConsts.InitFromDb, async ( AuthManager auth ) => await auth.TryLoadKeysFromDb()
             ? Results.Ok( true )
             : Results.Problem() );

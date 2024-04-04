@@ -32,6 +32,11 @@ public sealed class AuthManager
     }
     
     // Public Methods
+    public bool LoadEnvironmentVariables()
+    {
+        TryGetEnvKeys();
+        return _adminKeyString is not null;
+    }
     public bool LoadKeysFromJson( string keysString )
     {
         ClearCache();
@@ -82,7 +87,7 @@ public sealed class AuthManager
             await TryLoadKeysFromDb();
         
         RecordKeyRequest( DlRequestType.User, key, ip );
-        return _cachedKeyStrings.ContainsKey( key );
+        return _cachedKeyStrings.ContainsKey( key ) || _specialKeys.Contains( key );
     }
     public bool ValidateKeyAdmin( string key, string ip )
     {

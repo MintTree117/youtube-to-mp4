@@ -6,7 +6,8 @@ public sealed class FFmpegService( ILogger<FFmpegService> logger )
 {
     readonly ILogger<FFmpegService> _logger = logger;
 
-    const string FFmpegPath = "/ffmpeg-6.1.1/ffmpeg";
+    const string FFmpegFolderName = "ffmpeg-6.1.1";
+    const string FFmpegFileName = "ffmpeg";
     const string TempVideoFileName = "temp_video.mp4";
     const string TempThumbnailFileName = "temp_thumbnail.jpg";
     const string TempThumbnailConvertedFileName = "temp_thumbnail_converted.jpg";
@@ -14,7 +15,10 @@ public sealed class FFmpegService( ILogger<FFmpegService> logger )
     public async Task<bool> TryCutVideo( string videoPath, TimeSpan startTime, TimeSpan endTime )
     {
         if ( !GetFFmpegPath( out string ffmpegPath ) )
-            return false;
+        {
+            _logger.LogError( "Failed to get ffmpeg path!" );
+            return false;   
+        }
 
         string tempVideoPath = GetTempVideoPath(); // the cut video
         TimeSpan duration = endTime - startTime; // Calculate duration
@@ -37,6 +41,11 @@ public sealed class FFmpegService( ILogger<FFmpegService> logger )
             }
             
             await cutProcess.WaitForExitAsync();
+
+            string message = await cutProcess.StandardOutput.ReadToEndAsync();
+            string error = await cutProcess.StandardError.ReadToEndAsync();
+            _logger.LogError( $"FFMPEG CUT MESSAGE: {message}" );
+            _logger.LogError( $"FFMPEG CUT ERROR: {error}" );
 
             File.Delete( videoPath ); // Delete original file
             File.Move( tempVideoPath, videoPath ); // Move the cut video file to original path
@@ -193,11 +202,19 @@ public sealed class FFmpegService( ILogger<FFmpegService> logger )
     
     static bool GetFFmpegPath( out string path )
     {
-        path = $"{Directory.GetCurrentDirectory()}{FFmpegPath}";
+        /*string currentDirectory = Directory.GetCurrentDirectory();
+        path = Path.Combine( currentDirectory, FFmpegPath );
+        return File.Exists( path );*/
+
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        string ffmpegFolder = Path.Combine( baseDirectory, FFmpegFolderName );
+        path = Path.Combine( ffmpegFolder, FFmpegFileName );
         return File.Exists( path );
     }
     static string GetTempVideoPath()
     {
-        return Path.Combine( Path.GetTempPath(), TempVideoFileName );
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine( baseDirectory, TempVideoFileName );
+        //return Path.Combine( Path.GetTempPath(), TempVideoFileName );
     }
 }

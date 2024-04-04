@@ -11,6 +11,25 @@ public sealed class ClientAdminService( IHttpClientFactory httpClientFactory, Cl
     readonly ClientAuthenticator _authenticator = authenticator;
     
     // Public Methods
+    public async Task<bool> TryFetchVars()
+    {
+        try
+        {
+            await _authenticator.SetHttpAuthHeader( _http );
+
+            HttpResponseMessage reply = await _http.PostAsJsonAsync( HttpConsts.InitFromDb, string.Empty );
+
+            if ( !reply.IsSuccessStatusCode )
+                await HandleError( reply, "Post" );
+
+            return reply.IsSuccessStatusCode;
+        }
+        catch ( Exception e )
+        {
+            Utils.WriteLine( e );
+            return false;
+        }
+    }
     public async Task<bool> TryPutJson( string keyInfo )
     {
         try

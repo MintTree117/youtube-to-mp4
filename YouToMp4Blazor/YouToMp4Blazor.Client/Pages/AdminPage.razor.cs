@@ -9,7 +9,11 @@ public sealed partial class AdminPage : PageBase
 
     string _keyString = string.Empty;
     string _connectionString = string.Empty;
-    
+
+    async Task OnClickEnvVars()
+    {
+        
+    }
     async Task OnClickPutJson()
     {
         ToggleLoading( true, "Pushing Json to server..." );

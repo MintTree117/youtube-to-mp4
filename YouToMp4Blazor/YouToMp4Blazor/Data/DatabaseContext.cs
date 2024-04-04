@@ -10,7 +10,7 @@ public sealed class DatabaseContext
     public DatabaseContext( ILogger<DatabaseContext> logger, IConfiguration config )
     {
         Logger = logger;
-        _connectionString = config.GetConnectionString( "DefaultConnection" ) ?? string.Empty;
+        _connectionString = Environment.GetEnvironmentVariable( "DefaultConnection" ) ?? string.Empty; // config.GetConnectionString( "DefaultConnection" ) ?? string.Empty;
     }
 
     public async Task<SqlConnection> GetOpenConnection()
