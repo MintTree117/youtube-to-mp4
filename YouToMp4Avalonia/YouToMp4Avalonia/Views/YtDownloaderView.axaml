@@ -1,0 +1,89 @@
+<UserControl 
+	x:Class="YouToMp4Avalonia.Views.YtDownloaderView"
+	x:DataType="viewModels1:YtDownloaderViewModel"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:viewModels1="clr-namespace:YouToMp4Avalonia.ViewModels"
+	xmlns:views1="clr-namespace:YouToMp4Avalonia.Views">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/AppStyles.axaml" />
+    </UserControl.Styles>
+	
+    <!-- Content -->
+    <StackPanel VerticalAlignment="Center" MaxWidth="800">
+        <!-- Page Title -->
+        <TextBlock
+            Classes="PageTitle"
+            HorizontalAlignment="Center"
+            Text="Youtube Downloader" />
+        <!-- Title Separator -->
+        <Border Classes="TitleSeparator"/>
+        <!-- Video Image -->
+        <Border
+            HorizontalAlignment="Center"
+            Width="150"
+            Height="150"
+            Margin="0,0,0,30"
+            BorderBrush="DarkGray"
+            BorderThickness="1"
+            CornerRadius="5">
+            <!-- Border Background -->
+            <Border.Background>
+                <ImageBrush
+                    Opacity="0.6"
+                    Stretch="UniformToFill"
+                    Source="{Binding VideoImageBitmap}" />
+            </Border.Background>
+
+        </Border>
+        <!-- Video Title -->
+        <TextBlock
+            HorizontalAlignment="Center"
+            Margin="0,0,0,30"
+            FontWeight="Bold"
+            TextWrapping="Wrap"
+            Text="{Binding VideoName}" />
+        <!-- Link Box -->
+        <TextBox
+            HorizontalAlignment="Stretch"
+            Margin="0,0,0,15"
+            Padding="20,20,20,20"
+            Watermark="Paste link here"
+            Text="{Binding YoutubeLink}" 
+            IsEnabled="{Binding IsLinkBoxEnabled} "/>
+        <!-- Stream Type -->
+        <ComboBox
+            HorizontalAlignment="Stretch" 
+            Margin="0,0,0,15"
+            Padding="20,20,20,20"
+            PlaceholderText="Select a stream type"
+            ItemsSource="{Binding StreamTypes}" 
+            SelectedItem="{Binding SelectedStreamType}"
+            IsEnabled="{Binding IsSettingsEnabled}" />
+        <!-- Quality -->
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            Margin="0,0,0,15"
+            Padding="20,20,20,20"
+            PlaceholderText="Select a stream quality"
+            ItemsSource="{Binding StreamQualities}" 
+            SelectedItem="{Binding SelectedStreamQuality}"
+            IsEnabled="{Binding IsSettingsEnabled}" />
+        <!-- Submit -->
+        <Button
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            Margin="0,0,0,0"
+            Padding="30,20"
+            Command="{Binding DownloadCommand}"
+            IsEnabled="{Binding IsSettingsEnabled}"
+            Content="Download" />
+        <!-- Message Box -->
+        <views1:ResultMessage
+            Margin="0,15,0,0"
+            Text="{Binding Message}"
+            CloseCommand="{Binding CloseMessageCommand}"
+            IsVisible="{Binding HasMessage}" />
+        </StackPanel>
+</UserControl>

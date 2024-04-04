@@ -1,0 +1,88 @@
+<UserControl 
+	x:Class="YouToMp4Avalonia.Views.SettingsView"
+	x:DataType="viewModels1:SettingsViewModel"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:viewModels1="clr-namespace:YouToMp4Avalonia.ViewModels"
+	xmlns:views1="clr-namespace:YouToMp4Avalonia.Views">
+
+	<!-- Content -->
+	<StackPanel 
+		VerticalAlignment="Top"
+		MaxWidth="600"
+		Margin="0,100,0,0"
+		IsEnabled="{Binding IsFree} ">
+		<!-- Title -->
+		<TextBlock
+			Classes="PageTitle"
+			HorizontalAlignment="Center"
+			Text="App Settings" />
+		<!-- Title Separator -->
+		<Border Classes="TitleSeparator"/>
+		<!-- Api Key Title -->
+		<TextBlock
+			HorizontalAlignment="Left"
+			Margin="0 0 0 5"
+			FontWeight="Bold"
+			Text="Archive Key" />
+		<!-- Api Key Field -->
+		<TextBox
+			HorizontalAlignment="Stretch"
+			Margin="0 0 0 15"
+			Padding="15"
+			Text="{Binding ApiKey}" />
+		<!-- Download Location Title -->
+		<TextBlock
+			HorizontalAlignment="Left"
+			Margin="0 0 0 5"
+			FontWeight="Bold"
+			Text="Download Location" />
+		<!-- Download Location Field -->
+		<TextBox
+			HorizontalAlignment="Stretch"
+			Margin="0 0 0 15"
+			Padding="15"
+			Text="{Binding DownloadLocation}" />
+		<!-- Download Location Title -->
+		<TextBlock
+			HorizontalAlignment="Left"
+			Margin="0 0 0 5"
+			FontWeight="Bold"
+			Text="FFmpeg Filepath (Required for file thumbnails)" />
+		<!-- FFmpeg Filepath (Required for file thumbnails) -->
+		<TextBox
+			HorizontalAlignment="Stretch"
+			Margin="0 0 0 15"
+			Padding="15"
+			Text="{Binding FFmpegPath}" />
+		<!-- Background Image Title -->
+		<TextBlock
+			HorizontalAlignment="Left"
+			Margin="0 0 0 5"
+			FontWeight="Bold"
+			Text="Background" />
+		<!-- Background Image Dropdown -->
+		<ComboBox
+			HorizontalAlignment="Stretch"
+			Margin="0 0 0 15"
+			Padding="15"
+			PlaceholderText="None"
+			ItemsSource="{Binding BackgroundImages}" 
+			SelectedItem="{Binding SelectedBackgroundImage}" />
+		<!-- Save Button -->
+		<Button
+			HorizontalAlignment="Stretch"
+			HorizontalContentAlignment="Center"
+			Margin="0,5,0,0"
+			Padding="15,20"
+			IsEnabled="{Binding SettingsChanged}"
+			Command="{Binding SaveChangesCommand}"
+			Content="Save Changes" />
+		<!-- Message Box -->
+		<views1:ResultMessage
+			Margin="0,15,0,0"
+			Text="{Binding Message}"
+			CloseCommand="{Binding CloseMessageCommand}"
+			IsVisible="{Binding HasMessage}" />
+	</StackPanel>
+</UserControl>

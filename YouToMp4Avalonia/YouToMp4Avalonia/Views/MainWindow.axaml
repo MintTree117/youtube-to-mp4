@@ -1,20 +1,97 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:YouToMp4Avalonia.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="YouToMp4Avalonia.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="YouToMp4Avalonia">
+<Window
+    x:Class="YouToMp4Avalonia.Views.MainWindow"
+    x:DataType="viewModels:MainWindowViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:YouToMp4Avalonia.ViewModels"
+    mc:Ignorable="d" 
+    d:DesignWidth="800" 
+    d:DesignHeight="1000"
+    Height="800"
+    Width="1000"
+    Icon="avares://YouToMp4Avalonia/Assets/avalonia_logo.ico"
+    Title="dlTubeAvalonia">
 
+    <!-- Data Context -->
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <viewModels:MainWindowViewModel />
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Window.Styles>
+        <StyleInclude Source="/Styles/AppStyles.axaml" />
+    </Window.Styles>
+    
+    <!-- Window Background -->
+    <Window.Background>
+        <ImageBrush
+            Stretch="UniformToFill" />
+    </Window.Background>
 
+    <!-- Semi-Transparent Background Overlay -->
+    <Border Classes="bg-overlay" BorderBrush="rgba(90, 90, 90, 1)" BorderThickness="1">
+        <!-- Content -->
+        <Grid RowDefinitions="Auto,*" Opacity="1">
+            <!-- Top Nav -->
+            <Grid Grid.Row="0"
+                ColumnDefinitions="*,*,*,*"
+                HorizontalAlignment="Stretch"
+                Height="50">
+                <!-- Downloader Button -->
+                <Button 
+                    Grid.Column="0"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    VerticalContentAlignment="Center"
+                    Content="Youtube Downloader"
+                    Click="OnClickViewYoutubeDownloader">
+                </Button>
+                <!-- Youtube Button -->
+                <Button
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    VerticalContentAlignment="Center"
+                    Content="Youtube Search"
+                    Click="OnClickViewYoutubeSearch">
+                </Button>
+                <!-- Archive Button -->
+                <Button
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    VerticalContentAlignment="Center"
+                    Content="Archive"
+                    Click="OnClickViewArchive">
+                </Button>
+                <!-- Settings Button -->
+                <Button
+                    Grid.Column="3"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    VerticalContentAlignment="Center"
+                    Content="App Settings"
+                    Click="OnClickSettings">
+                </Button>
+            </Grid>
+
+            <!-- Main Content -->
+            <Border 
+                Grid.Row="1">
+                <ContentControl
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Opacity="1"
+                    x:Name="MainContent" />
+            </Border>
+            
+        </Grid>
+    </Border>
 </Window>

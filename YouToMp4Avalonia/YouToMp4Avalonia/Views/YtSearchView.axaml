@@ -1,0 +1,148 @@
+<UserControl 
+    x:Class="YouToMp4Avalonia.Views.YtSearchView"
+    x:DataType="viewModels1:YtSearchViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels1="clr-namespace:YouToMp4Avalonia.ViewModels"
+    xmlns:views1="clr-namespace:YouToMp4Avalonia.Views">
+    
+    <!-- Content -->
+    <Grid RowDefinitions="Auto,Auto,*" IsEnabled="{Binding IsFree}">
+        <!-- Header Wrapper -->
+        <Border 
+            Grid.Row="0" 
+            Classes="SearchHeaderWrapper"
+            Height="80">
+            <!-- Youtube Logo, Search Bar, Button, Dropdowns -->
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" 
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
+                <!-- Youtube Button -->
+                <Button
+                    Grid.Column="0"
+                    Classes="LogoButton"
+                    CommandParameter="https://www.youtube.com/"
+                    Click="OnClickLink">
+                    <Button.Background>
+                        <ImageBrush
+                            Stretch="UniformToFill"
+                            Opacity="0.8"
+                            Source="avares://dlTubeAvalonia/Assets/youtube_logo.jpg">
+                        </ImageBrush>
+                    </Button.Background>
+                </Button>
+                <!-- Search Bar -->
+                <TextBox
+                    Grid.Column="1"
+                    Classes="SearchBar"
+                    Watermark="Search YouTube..."
+                    Text="{Binding SearchText}"/>
+                <!-- Search Button -->
+                <Button 
+                    Grid.Column="2"
+                    Classes="SearchButton"
+                    Margin="0,0,10,0"
+                    Command="{Binding SearchCommand}">
+                    <PathIcon Data="{StaticResource search_regular}" />
+                </Button>
+                <!-- Sort Dropdown -->
+                <ComboBox
+                    Grid.Column="3"
+                    Classes="SearchDropdown"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,10,0"
+                    Width="175"
+                    ItemsSource="{Binding SortTypes}"
+                    SelectedItem="{Binding SelectedSortType}" />
+                <!-- Results Dropdown -->
+                <ComboBox 
+                    Grid.Column="4"
+                    Classes="SearchDropdown"
+                    HorizontalAlignment="Right"
+                    Width="175"
+                    ItemsSource="{Binding ResultCountNames}"
+                    SelectedItem="{Binding SelectedResultCountName}" />
+            </Grid>
+        </Border>
+
+        <!-- Message Box -->
+        <views1:ResultMessage 
+            Grid.Row="1"
+            Text="{Binding Message}"
+            CloseCommand="{Binding CloseMessageCommand}"
+            IsVisible="{Binding HasMessage}" />
+        
+        <!-- Search Results Wrapped In ScrollView -->
+        <ScrollViewer 
+            Grid.Row="2"
+            Classes="bg-popout"
+            Margin="0,0,0,0"
+            Padding="10,0,10,0">
+            <ItemsControl ItemsSource="{Binding SearchResults}">
+                <ItemsControl.ItemTemplate>
+                    <!-- Search Result Item -->
+                    <DataTemplate>
+                        <!-- Wrapper -->
+                       <Border Classes="SearchResultWrapper">
+                           <!-- Content -->
+                            <Grid ColumnDefinitions="Auto,*">
+                                <!-- Column 0: Video Image -->
+                                <Border Grid.Column="0" Classes="SearchResultImageWrapper">
+                                    <Image Classes="SearchResultImage" Source="{Binding Image}" />
+                                </Border>
+                                <!-- Column 1: Video Info -->
+                                <StackPanel Grid.Column="1">
+                                    <!-- Row 0: Video Info -->
+                                    <Grid ColumnDefinitions="Auto,*" Margin="0">
+                                        <!-- Title -->
+                                        <TextBlock 
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,0,0,0"
+                                            FontWeight="Bold"
+                                            TextDecorations="Underline"
+                                            Text="{Binding Title}" />
+                                        <!-- Duration -->
+                                        <TextBlock 
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,0,0,10"
+                                            FontWeight="Bold"
+                                            Text="{Binding Duration}" />
+                                    </Grid>
+                                    <!-- Row 1: Video Url -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <!-- Url -->
+                                        <Button
+                                            Grid.Column="0"
+                                            VerticalContentAlignment="Center"
+                                            BorderBrush="#4a4a4a"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            Content="{Binding Url}"
+                                            CommandParameter="{Binding Url}"
+                                            Click="OnClickLink" />
+                                        <!-- Copy Url Button -->
+                                        <Button
+                                            Grid.Column="1"
+                                            VerticalAlignment="Stretch"
+                                            VerticalContentAlignment="Center"
+                                            Margin="25,0,0,0"
+                                            Padding="10"
+                                            BorderBrush="DarkGray"
+                                            BorderThickness="1"
+                                            CornerRadius="5"
+                                            CommandParameter="{Binding Url}"
+                                            Click="OnClickCopy">
+                                            <PathIcon Data="{StaticResource copy_regular}" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                       </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,15 +1,17 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="YouToMp4Avalonia.App"
-             xmlns:local="using:YouToMp4Avalonia"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
+<Application 
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="YouToMp4Avalonia.App"
+    xmlns:local="using:YouToMp4Avalonia"
+    RequestedThemeVariant="Default">
+    
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://YouToMp4Avalonia/Styles/Icons.axaml" />
+        <StyleInclude Source="avares://YouToMp4Avalonia/Styles/AppStyles.axaml" />
     </Application.Styles>
 </Application>

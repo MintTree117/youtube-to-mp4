@@ -6,7 +6,7 @@ using YouToMp4Avalonia.Views;
 
 namespace YouToMp4Avalonia;
 
-public partial class App : Application
+public sealed partial class App : Application
 {
     public override void Initialize()
     {

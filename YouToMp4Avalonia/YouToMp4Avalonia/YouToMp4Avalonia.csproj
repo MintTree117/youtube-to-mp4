@@ -6,11 +6,27 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <RootNamespace>YouToMp4Avalonia</RootNamespace>
+        <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+        <PublishTrimmed>true</PublishTrimmed>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
+        <EmbeddedResource Include="Assets\Backgrounds\concert.jpg">
+            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.concert.jpg</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\Backgrounds\night_lights.jpg">
+            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.night_lights.jpg</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\Backgrounds\forest.jpg">
+            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.forest.jpg</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\Backgrounds\space.jpg">
+            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.space.jpg</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\default_stream_image.png"/>
     </ItemGroup>
 
 
@@ -22,5 +38,8 @@
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.6"/>
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="YoutubeExplode" Version="6.3.13" />
     </ItemGroup>
 </Project>

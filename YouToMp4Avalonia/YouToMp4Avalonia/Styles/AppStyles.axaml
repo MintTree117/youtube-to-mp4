@@ -1,0 +1,108 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	
+	<!-- Backgrounds -->
+	<Style Selector="Border.bg-overlay">
+		<Setter Property="Background" Value="rgba(10, 10, 10, 0.85)" />
+	</Style>
+	<Style Selector="Panel.bg-overlay">
+		<Setter Property="Background" Value="rgba(10, 10, 10, 0.85)" />
+	</Style>
+	<Style Selector="Grid.bg-overlay">
+		<Setter Property="Background" Value="rgba(10, 10, 10, 0.85)" />
+	</Style>
+
+	<Style Selector="Border.bg-popout">
+		<Setter Property="Background" Value="rgba(30, 30, 30, 0.65)" />
+	</Style>
+	<Style Selector="ScrollViewer.bg-popout">
+		<Setter Property="Background" Value="rgba(30, 30, 30, 0.65)" />
+	</Style>
+	
+	<!-- Page Title -->
+	<Style Selector="TextBlock.PageTitle">
+		<Setter Property="FontSize" Value="36" />
+		<Setter Property="FontWeight" Value="Bold" />
+		<Setter Property="Foreground" Value="WhiteSmoke" />
+	</Style>
+	<!-- Separator -->
+	<Style Selector="Border.TitleSeparator">
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="Margin" Value="0 30 0 30" />
+		<Setter Property="BorderThickness" Value="0,0,0,2" />
+		<Setter Property="BorderBrush" Value="#707070" />
+	</Style>
+	
+	<!-- Search Header Wrapper -->
+	<Style Selector="Border.SearchHeaderWrapper">
+		<Setter Property="Padding" Value="10,15" />
+		<Setter Property="Background" Value="rgba(30, 30, 30, 0.65)" />
+	</Style>
+	<!-- Logo Button -->
+	<Style Selector="Button.LogoButton">
+		<Setter Property="HorizontalAlignment" Value="Left" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Margin" Value="0,5,10,5" />
+		<Setter Property="Padding" Value="35,0" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="BorderBrush" Value="DarkGray" />
+		<Setter Property="CornerRadius" Value="7" />
+	</Style>
+	<!-- Search Bar -->
+	<Style Selector="TextBox.SearchBar">
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Margin" Value="0,0,10,0" />
+		<Setter Property="BorderBrush" Value="#3d3d3d" />
+		<Setter Property="Background" Value="rgba(10, 10, 10, 0.8)" />
+	</Style>
+	<!-- Search Button -->
+	<Style Selector="Button.SearchButton">
+		<Setter Property="HorizontalAlignment" Value="Right" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Margin" Value="0,0,0,0" />
+		<Setter Property="Padding" Value="20,10" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="BorderBrush" Value="#3d3d3d" />
+		<Setter Property="Background" Value="rgba(10, 10, 10, 0.8)" />
+	</Style>
+	<!-- Search Dropdown -->
+	<Style Selector="ComboBox.SearchDropdown">
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Padding" Value="20,10" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="BorderBrush" Value="#3d3d3d" />
+		<Setter Property="Background" Value="rgba(10, 10, 10, 0.8)" />
+	</Style>
+
+	<!-- Search Result Wrapper -->
+	<Style Selector="Border.SearchResultWrapper">
+		<Setter Property="Margin" Value="0,0,5,0" />
+		<Setter Property="Padding" Value="0,10" />
+		<Setter Property="BorderThickness" Value="0,0,0,1" />
+		<Setter Property="BorderBrush" Value="#3d3d3d" />
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+	<!-- Search Result Image Wrapper -->
+	<Style Selector="Border.SearchResultImageWrapper">
+		<Setter Property="HorizontalAlignment" Value="Left" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="Width" Value="100" />
+		<Setter Property="Margin" Value="0,0,15,0" />
+		<Setter Property="Padding" Value="0,0" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="BorderBrush" Value="#4a4a4a" />
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+	<!-- Search Result Image -->
+	<Style Selector="Image.SearchResultImage">
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="Stretch" Value="UniformToFill" />
+	</Style>
+</Styles>
