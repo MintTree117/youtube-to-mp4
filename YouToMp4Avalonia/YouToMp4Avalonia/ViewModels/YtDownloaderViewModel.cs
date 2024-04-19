@@ -39,6 +39,8 @@ public sealed class YtDownloaderViewModel : ReactiveObject
     string _videoName = DefaultVideoName;
     string _selectedStreamTypeName = string.Empty; // saves state between downloads for user convenience
     string _selectedStreamQualityName = string.Empty;
+    string _streamStartTime = string.Empty;
+    string _streamEndTime = string.Empty;
     string _downloadLocation = string.Empty;
     bool _isLinkBoxEnabled;
     bool _isVideoSettingsEnabled;
@@ -124,6 +126,16 @@ public sealed class YtDownloaderViewModel : ReactiveObject
     {
         get => _selectedStreamQualityName;
         set => this.RaiseAndSetIfChanged( ref _selectedStreamQualityName, value );
+    }
+    public string StreamStartTime
+    {
+        get => _streamStartTime;
+        set => this.RaiseAndSetIfChanged( ref _streamStartTime, value );
+    }
+    public string StreamEndTime
+    {
+        get => _streamEndTime;
+        set => this.RaiseAndSetIfChanged( ref _streamEndTime, value );
     }
     public bool IsLinkBoxEnabled
     {
