@@ -20,7 +20,6 @@ public sealed partial class MainWindow : Window, IDisposable
     
     // Cached Views
     readonly YtDownloaderView _downloadView;
-    YtSearchView? _youtubeView;
     
     // Initialization
     public void Dispose()
@@ -91,12 +90,6 @@ public sealed partial class MainWindow : Window, IDisposable
     void OnClickViewYoutubeDownloader( object? sender, RoutedEventArgs args )
     {
         MainContent.Content = _downloadView;
-        OnNewPage();
-    }
-    void OnClickViewYoutubeSearch( object? sender, RoutedEventArgs args )
-    {
-        _youtubeView ??= new YtSearchView();
-        MainContent.Content = _youtubeView;
         OnNewPage();
     }
     void OnClickSettings( object? sender, RoutedEventArgs args )

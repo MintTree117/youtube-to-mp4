@@ -37,7 +37,7 @@
         <Grid RowDefinitions="Auto,*" Opacity="1">
             <!-- Top Nav -->
             <Grid Grid.Row="0"
-                ColumnDefinitions="*,*,*"
+                ColumnDefinitions="*,*"
                 HorizontalAlignment="Stretch"
                 Height="50">
                 <!-- Downloader Button -->
@@ -50,19 +50,9 @@
                     Content="Youtube Downloader"
                     Click="OnClickViewYoutubeDownloader">
                 </Button>
-                <!-- Youtube Button -->
-                <Button
-                    Grid.Column="1"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalAlignment="Stretch"
-                    VerticalContentAlignment="Center"
-                    Content="Youtube Search"
-                    Click="OnClickViewYoutubeSearch">
-                </Button>
                 <!-- Settings Button -->
                 <Button
-                    Grid.Column="2"
+                    Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     VerticalAlignment="Stretch"

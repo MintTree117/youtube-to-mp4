@@ -38,7 +38,6 @@ sealed class Program
         services.AddSingleton<YoutubeClientHolder>();
         services.AddSingleton<HttpController>();
         services.AddSingleton<YoutubeDownloader>();
-        services.AddSingleton<YoutubeBrowser>();
         services.AddSingleton<FFmpegChecker>();
     }
 }
