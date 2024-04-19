@@ -20,58 +20,6 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
-
-    <Window.Styles>
-        <StyleInclude Source="/Styles/AppStyles.axaml" />
-    </Window.Styles>
     
-    <!-- Window Background -->
-    <Window.Background>
-        <ImageBrush
-            Stretch="UniformToFill" />
-    </Window.Background>
-
-    <!-- Semi-Transparent Background Overlay -->
-    <Border Classes="bg-overlay" BorderBrush="rgba(90, 90, 90, 1)" BorderThickness="1">
-        <!-- Content -->
-        <Grid RowDefinitions="Auto,*" Opacity="1">
-            <!-- Top Nav -->
-            <Grid Grid.Row="0"
-                ColumnDefinitions="*,*"
-                HorizontalAlignment="Stretch"
-                Height="50">
-                <!-- Downloader Button -->
-                <Button 
-                    Grid.Column="0"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalAlignment="Stretch"
-                    VerticalContentAlignment="Center"
-                    Content="Youtube Downloader"
-                    Click="OnClickViewYoutubeDownloader">
-                </Button>
-                <!-- Settings Button -->
-                <Button
-                    Grid.Column="1"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalAlignment="Stretch"
-                    VerticalContentAlignment="Center"
-                    Content="App Settings"
-                    Click="OnClickSettings">
-                </Button>
-            </Grid>
-
-            <!-- Main Content -->
-            <Border 
-                Grid.Row="1">
-                <ContentControl
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Opacity="1"
-                    x:Name="MainContent" />
-            </Border>
-            
-        </Grid>
-    </Border>
+    <viewModels:YtDownloaderViewModel></viewModels:YtDownloaderViewModel>
 </Window>

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using YouToMp4Avalonia.ViewModels;
 
@@ -14,5 +15,9 @@ public sealed partial class YtDownloaderView : UserControl
     void InitializeComponent()
     {
         AvaloniaXamlLoader.Load( this );
+    }
+    void SettingsChanged( object? sender, RoutedEventArgs args )
+    {
+        ( ( YtDownloaderViewModel ) DataContext! ).SettingsCommand.Execute();
     }
 }

@@ -1,9 +1,11 @@
-﻿namespace YouToMp4Avalonia.ViewModels;
+﻿using ReactiveUI;
 
-public sealed class MainWindowViewModel : BaseViewModel
+namespace YouToMp4Avalonia.ViewModels;
+
+public sealed class MainWindowViewModel : ReactiveObject
 {
     public MainWindowViewModel()
     {
-        IsFree = true;
+        
     }
 }

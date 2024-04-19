@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
-using YouToMp4Avalonia.Enums;
 using YouToMp4Avalonia.Models;
 using YouToMp4Avalonia.Services;
 
 namespace YouToMp4Avalonia.ViewModels;
 
-public sealed class YtDownloaderViewModel : BaseViewModel
+public sealed class YtDownloaderViewModel : ReactiveObject
 {
     // Services
+    readonly FileLogger Logger = Program.ServiceProvider.GetService<FileLogger>()!;
+    readonly SettingsManager SettingsManager = Program.ServiceProvider.GetService<SettingsManager>()!;
+    readonly SettingsManager _settingsManager = Program.ServiceProvider.GetService<SettingsManager>()!;
     YoutubeDownloader? _dlService;
     
     // Constants
@@ -26,6 +29,9 @@ public sealed class YtDownloaderViewModel : BaseViewModel
     const string DefaultVideoImage = "avares://YouToMp4Avalonia/Assets/default_stream_image.png";
     
     // Property Field List Values
+    bool _isFree;
+    bool _hasMessage;
+    string _message = string.Empty;
     Bitmap? _videoImageBitmap;
     List<string> _streamTypes = Enum.GetNames<StreamType>().ToList();
     List<string> _streamQualities = [ ];
@@ -33,11 +39,14 @@ public sealed class YtDownloaderViewModel : BaseViewModel
     string _videoName = DefaultVideoName;
     string _selectedStreamTypeName = string.Empty; // saves state between downloads for user convenience
     string _selectedStreamQualityName = string.Empty;
+    string _downloadLocation = string.Empty;
     bool _isLinkBoxEnabled;
-    bool _isSettingsEnabled;
+    bool _isVideoSettingsEnabled;
 
     // Commands
     public ReactiveCommand<Unit, Unit> DownloadCommand { get; }
+    public ReactiveCommand<Unit, Unit> SettingsCommand { get; }
+    public ReactiveCommand<Unit, Unit> CloseMessageCommand { get; }
     ReactiveCommand<Unit, Unit> LoadDataCommand { get; }
     ReactiveCommand<Unit, Unit> NewStreamCommand { get; }
 
@@ -47,16 +56,32 @@ public sealed class YtDownloaderViewModel : BaseViewModel
         LoadDataCommand = ReactiveCommand.CreateFromTask( HandleNewLink );
         DownloadCommand = ReactiveCommand.CreateFromTask( DownloadStream );
         NewStreamCommand = ReactiveCommand.CreateFromTask( HandleNewStreamType );
+        SettingsCommand = ReactiveCommand.CreateFromTask( UpdateSettings );
+        CloseMessageCommand = ReactiveCommand.Create( CloseMessage );
         
         IsLinkBoxEnabled = true;
 
+        DownloadLocation = _settingsManager.Settings.DownloadLocation;
+
         LoadDefaultImage();
-        
-        // Load Initial Settings
-        OnAppSettingsChanged( SettingsManager.Settings );
     }
 
     // Reactive Properties
+    public bool IsFree
+    {
+        get => _isFree;
+        set => this.RaiseAndSetIfChanged( ref _isFree, value );
+    }
+    public string Message
+    {
+        get => _message;
+        set => this.RaiseAndSetIfChanged( ref _message, value );
+    }
+    public bool HasMessage
+    {
+        get => _hasMessage;
+        set => this.RaiseAndSetIfChanged( ref _hasMessage, value );
+    }
     public Bitmap? VideoImageBitmap
     {
         get => _videoImageBitmap;
@@ -105,10 +130,15 @@ public sealed class YtDownloaderViewModel : BaseViewModel
         get => _isLinkBoxEnabled;
         set => this.RaiseAndSetIfChanged( ref _isLinkBoxEnabled, value );
     }
-    public bool IsSettingsEnabled
+    public bool IsVideoSettingsEnabled
     {
-        get => _isSettingsEnabled;
-        set => this.RaiseAndSetIfChanged( ref _isSettingsEnabled, value );
+        get => _isVideoSettingsEnabled;
+        set => this.RaiseAndSetIfChanged( ref _isVideoSettingsEnabled, value );
+    }
+    public string DownloadLocation
+    {
+        get => _downloadLocation;
+        set => this.RaiseAndSetIfChanged( ref _downloadLocation, value );
     }
 
     // Command Delegates
@@ -131,7 +161,7 @@ public sealed class YtDownloaderViewModel : BaseViewModel
             return;
         }
 
-        IsSettingsEnabled = true;
+        IsVideoSettingsEnabled = true;
         VideoName = $"{_dlService.VideoName ?? DefaultVideoName} : Length = {_dlService.VideoDuration}";
 
         SetImageBitmap();
@@ -143,7 +173,7 @@ public sealed class YtDownloaderViewModel : BaseViewModel
             return;
 
         IsLinkBoxEnabled = false;
-        IsSettingsEnabled = false;
+        IsVideoSettingsEnabled = false;
         
         // Execute Download
         ServiceReply<bool> reply = await _dlService!.Download(
@@ -155,7 +185,28 @@ public sealed class YtDownloaderViewModel : BaseViewModel
 
         HasMessage = true;
         IsLinkBoxEnabled = true;
-        IsSettingsEnabled = true;
+        IsVideoSettingsEnabled = true;
+    }
+    async Task UpdateSettings()
+    {
+        IsLinkBoxEnabled = false;
+        IsVideoSettingsEnabled = false;
+
+        AppSettingsModel settingsModel = new()
+        {
+            DownloadLocation = _downloadLocation
+        };
+
+        ServiceReply<bool> reply = await _settingsManager.SaveSettings( settingsModel );
+
+        if ( !reply.Success )
+        {
+            HasMessage = true;
+            Message = PrintError( reply.PrintDetails() );
+        }
+        
+        IsLinkBoxEnabled = true;
+        IsVideoSettingsEnabled = true;
     }
 
     // Private Methods
@@ -180,6 +231,21 @@ public sealed class YtDownloaderViewModel : BaseViewModel
 
         SelectedStreamQuality = string.Empty;
     }
+    void CloseMessage()
+    {
+        HasMessage = false;
+    }
+    static string ExString( Exception e, string? message = null )
+    {
+        return string.IsNullOrWhiteSpace( message )
+            ? $"{e} : {e.Message}"
+            : $"{message} : {e} : {e.Message}";
+    }
+    public void ShowMessage( string message )
+    {
+        Message = message;
+        HasMessage = true;
+    }
     string GetDownloadPath()
     {
         return SettingsManager is not null
@@ -195,7 +261,7 @@ public sealed class YtDownloaderViewModel : BaseViewModel
         bool linkIsEmpty = string.IsNullOrWhiteSpace( _youtubeLink );
 
         LoadDefaultImage();
-        IsSettingsEnabled = false;
+        IsVideoSettingsEnabled = false;
         HasMessage = false;
         SelectedStreamType = string.Empty;
         Message = string.Empty;

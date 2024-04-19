@@ -35,9 +35,7 @@ sealed class Program
     {
         services.AddSingleton<FileLogger>();
         services.AddSingleton<SettingsManager>();
-        services.AddSingleton<YoutubeClientHolder>();
         services.AddSingleton<HttpController>();
         services.AddSingleton<YoutubeDownloader>();
-        services.AddSingleton<FFmpegChecker>();
     }
 }

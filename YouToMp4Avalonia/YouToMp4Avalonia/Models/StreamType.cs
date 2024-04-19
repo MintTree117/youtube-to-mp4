@@ -1,4 +1,4 @@
-namespace YouToMp4Avalonia.Enums;
+namespace YouToMp4Avalonia.Models;
 
 public enum StreamType
 {

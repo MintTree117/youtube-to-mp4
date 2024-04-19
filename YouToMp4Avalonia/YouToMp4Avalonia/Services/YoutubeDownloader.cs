@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Microsoft.Extensions.DependencyInjection;
-using YouToMp4Avalonia.Enums;
 using YouToMp4Avalonia.Models;
+using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
@@ -21,9 +21,10 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
     
     // Services
     readonly SettingsManager _settingsManager = Program.ServiceProvider.GetService<SettingsManager>()!;
-    readonly FFmpegChecker _ffmpegService = Program.ServiceProvider.GetService<FFmpegChecker>()!;
-    readonly YoutubeClientHolder _youtubeService = Program.ServiceProvider.GetService<YoutubeClientHolder>()!;
     readonly HttpController _httpService = Program.ServiceProvider.GetService<HttpController>()!;
+    
+    // Youtube Client
+    readonly YoutubeClient _youtubeClient = new();
     
     // Video Url From Constructor
     readonly string _videoUrl = videoUrl;
@@ -38,7 +39,6 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
     Video? _video;
     Bitmap? _thumbnailBitmap;
     byte[]? _thumbnailBytes;
-    bool _hasFFmeg;
     
     // Streams
     List<MuxedStreamInfo> _mixedStreams = [ ];
@@ -55,13 +55,11 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
     {
         try
         {
-            _streamManifest = await _youtubeService.YoutubeClient.Videos.Streams.GetManifestAsync( _videoUrl );
-            _video = await _youtubeService.YoutubeClient.Videos.GetAsync( _videoUrl );
-            _hasFFmeg = await _ffmpegService.CheckFFmpegInstallationAsync( _settingsManager.Settings.FFmpegFilepath );
+            _streamManifest = await _youtubeClient.Videos.Streams.GetManifestAsync( _videoUrl );
+            _video = await _youtubeClient.Videos.GetAsync( _videoUrl );
             
             // Get Video Image Data
-            if ( _hasFFmeg )
-                await LoadStreamThumbnailImage( _video.Thumbnails.Count > 0 ? _video.Thumbnails[ 0 ].Url : "" );
+            await LoadStreamThumbnailImage( _video.Thumbnails.Count > 0 ? _video.Thumbnails[ 0 ].Url : "" );
             
             return _streamManifest is not null && _video is not null
                 ? new ServiceReply<bool>( true )
@@ -97,10 +95,8 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
             
             string path = ConstructDownloadPath( filepath, streamInfo.Container.Name );
             
-            await _youtubeService.YoutubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
-
-            if ( _hasFFmeg )
-                await AddImage( path );
+            await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
+            await AddImage( path );
             
             return new ServiceReply<bool>( true );
         }
@@ -202,7 +198,7 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
     }
     async Task AddImage( string videoPath )
     {
-        if ( _thumbnailBytes is null || !_hasFFmeg )
+        if ( _thumbnailBytes is null )
             return;
 
         string tempThumbnailPath = Path.Combine( Path.GetTempPath(), TempThumbnailFileName );

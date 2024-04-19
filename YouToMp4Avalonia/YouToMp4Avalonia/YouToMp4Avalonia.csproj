@@ -14,18 +14,6 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>
-        <EmbeddedResource Include="Assets\Backgrounds\concert.jpg">
-            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.concert.jpg</LogicalName>
-        </EmbeddedResource>
-        <EmbeddedResource Include="Assets\Backgrounds\night_lights.jpg">
-            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.night_lights.jpg</LogicalName>
-        </EmbeddedResource>
-        <EmbeddedResource Include="Assets\Backgrounds\forest.jpg">
-            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.forest.jpg</LogicalName>
-        </EmbeddedResource>
-        <EmbeddedResource Include="Assets\Backgrounds\space.jpg">
-            <LogicalName>YouToMp4Avalonia.Assets.Backgrounds.space.jpg</LogicalName>
-        </EmbeddedResource>
         <EmbeddedResource Include="Assets\default_stream_image.png"/>
     </ItemGroup>
 
