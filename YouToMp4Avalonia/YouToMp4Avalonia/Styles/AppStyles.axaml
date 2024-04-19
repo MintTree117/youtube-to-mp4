@@ -4,7 +4,7 @@
 	
 	<!-- Backgrounds -->
 	<Style Selector="Border.bg-overlay">
-		<Setter Property="Background" Value="rgba(10, 10, 10, 0.85)" />
+		<Setter Property="Background" Value="rgba(40, 40, 40, 0.7)" />
 	</Style>
 	<Style Selector="Panel.bg-overlay">
 		<Setter Property="Background" Value="rgba(10, 10, 10, 0.85)" />

@@ -27,7 +27,7 @@
                         <ImageBrush
                             Stretch="UniformToFill"
                             Opacity="0.8"
-                            Source="avares://dlTubeAvalonia/Assets/youtube_logo.jpg">
+                            Source="avares://YouToMp4Avalonia/Assets/youtube_logo.jpg">
                         </ImageBrush>
                     </Button.Background>
                 </Button>

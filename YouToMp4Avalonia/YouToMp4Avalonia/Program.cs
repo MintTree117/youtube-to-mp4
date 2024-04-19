@@ -40,6 +40,5 @@ sealed class Program
         services.AddSingleton<YoutubeDownloader>();
         services.AddSingleton<YoutubeBrowser>();
         services.AddSingleton<FFmpegChecker>();
-        services.AddSingleton<ArchiveService>();
     }
 }

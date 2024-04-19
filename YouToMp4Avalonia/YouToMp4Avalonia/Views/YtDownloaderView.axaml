@@ -11,7 +11,7 @@
     </UserControl.Styles>
 	
     <!-- Content -->
-    <StackPanel VerticalAlignment="Center" MaxWidth="800">
+    <StackPanel VerticalAlignment="Center" MaxWidth="500">
         <!-- Page Title -->
         <TextBlock
             Classes="PageTitle"
