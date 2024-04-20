@@ -4,8 +4,9 @@ using System.Threading;
 
 namespace YouToMp4Avalonia.Services;
 
-public sealed class FileLogger
+public sealed class FileLogger : SingletonService<FileLogger>
 {
+    // Consts
     static readonly string LogDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "dlTubeAvalonia", "Logs" );
     static readonly string LogPath = Path.Combine( LogDirectory, "logs.txt" );
     static readonly SemaphoreSlim _semaphore = new( 1, 1 );

@@ -1,8 +1,7 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using YouToMp4Avalonia.Services;
 using Avalonia;
 using Avalonia.ReactiveUI;
+using YouToMp4Avalonia.Services;
 
 namespace YouToMp4Avalonia;
 
@@ -14,11 +13,9 @@ sealed class Program
     // yet and stuff might break.
     [STAThread] public static void Main( string[] args )
     {
-        ServiceCollection serviceCollection = [ ];
-        ConfigureServices( serviceCollection );
-
-        ServiceProvider = serviceCollection.BuildServiceProvider();
-
+        FileLogger.Create();
+        SettingsManager.Create();
+        
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime( args );
     }
@@ -30,12 +27,4 @@ sealed class Program
             .WithInterFont()
             .LogToTrace()
             .UseReactiveUI();
-
-    static void ConfigureServices( IServiceCollection services )
-    {
-        services.AddSingleton<FileLogger>();
-        services.AddSingleton<SettingsManager>();
-        services.AddSingleton<HttpController>();
-        services.AddSingleton<YoutubeDownloader>();
-    }
 }

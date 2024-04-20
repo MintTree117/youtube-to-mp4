@@ -6,12 +6,8 @@ using YouToMp4Avalonia.Models;
 
 namespace YouToMp4Avalonia.Services;
 
-// Singleton Service
-public sealed class SettingsManager : BaseService
+public sealed class SettingsManager : SingletonService<SettingsManager>
 {
-    // Change Event
-    public event Action<AppSettingsModel>? SettingsChanged;
-    
     // Constants
     public const string DefaultDownloadDirectory = "./";
     const string CacheDirectory = "./Cache";
@@ -103,7 +99,6 @@ public sealed class SettingsManager : BaseService
         finally
         {
             Settings = newSettings;
-            SettingsChanged?.Invoke( Settings );
         }
     }
 }

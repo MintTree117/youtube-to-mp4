@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
@@ -15,9 +14,8 @@ namespace YouToMp4Avalonia.ViewModels;
 public sealed class MainViewModel : ReactiveObject
 {
     // Services
-    readonly FileLogger Logger = Program.ServiceProvider.GetService<FileLogger>()!;
-    readonly SettingsManager SettingsManager = Program.ServiceProvider.GetService<SettingsManager>()!;
-    readonly SettingsManager _settingsManager = Program.ServiceProvider.GetService<SettingsManager>()!;
+    readonly FileLogger _logger = FileLogger.Instance;
+    readonly SettingsManager _settingsManager = SettingsManager.Instance;
     YoutubeDownloader? _dlService;
     
     // Constants
@@ -29,9 +27,6 @@ public sealed class MainViewModel : ReactiveObject
     const string DefaultVideoImage = "avares://YouToMp4Avalonia/Assets/default_stream_image.png";
     
     // Property Field List Values
-    bool _isFree;
-    bool _hasMessage;
-    string _message = string.Empty;
     Bitmap? _videoImageBitmap;
     List<string> _streamTypes = Enum.GetNames<StreamType>().ToList();
     List<string> _streamQualities = [ ];
@@ -42,8 +37,10 @@ public sealed class MainViewModel : ReactiveObject
     string _streamStartTime = string.Empty;
     string _streamEndTime = string.Empty;
     string _downloadLocation = string.Empty;
+    string _message = string.Empty;
     bool _isLinkBoxEnabled;
     bool _isVideoSettingsEnabled;
+    bool _hasMessage;
 
     // Commands
     public ReactiveCommand<Unit, Unit> DownloadCommand { get; }
@@ -62,28 +59,11 @@ public sealed class MainViewModel : ReactiveObject
         CloseMessageCommand = ReactiveCommand.Create( CloseMessage );
         
         IsLinkBoxEnabled = true;
-
         DownloadLocation = _settingsManager.Settings.DownloadLocation;
-
         LoadDefaultImage();
     }
 
     // Reactive Properties
-    public bool IsFree
-    {
-        get => _isFree;
-        set => this.RaiseAndSetIfChanged( ref _isFree, value );
-    }
-    public string Message
-    {
-        get => _message;
-        set => this.RaiseAndSetIfChanged( ref _message, value );
-    }
-    public bool HasMessage
-    {
-        get => _hasMessage;
-        set => this.RaiseAndSetIfChanged( ref _hasMessage, value );
-    }
     public Bitmap? VideoImageBitmap
     {
         get => _videoImageBitmap;
@@ -137,6 +117,16 @@ public sealed class MainViewModel : ReactiveObject
         get => _streamEndTime;
         set => this.RaiseAndSetIfChanged( ref _streamEndTime, value );
     }
+    public string DownloadLocation
+    {
+        get => _downloadLocation;
+        set => this.RaiseAndSetIfChanged( ref _downloadLocation, value );
+    }
+    public string Message
+    {
+        get => _message;
+        set => this.RaiseAndSetIfChanged( ref _message, value );
+    }
     public bool IsLinkBoxEnabled
     {
         get => _isLinkBoxEnabled;
@@ -147,10 +137,10 @@ public sealed class MainViewModel : ReactiveObject
         get => _isVideoSettingsEnabled;
         set => this.RaiseAndSetIfChanged( ref _isVideoSettingsEnabled, value );
     }
-    public string DownloadLocation
+    public bool HasMessage
     {
-        get => _downloadLocation;
-        set => this.RaiseAndSetIfChanged( ref _downloadLocation, value );
+        get => _hasMessage;
+        set => this.RaiseAndSetIfChanged( ref _hasMessage, value );
     }
 
     // Command Delegates
@@ -165,7 +155,7 @@ public sealed class MainViewModel : ReactiveObject
         
         if ( !reply.Success )
         {
-            Logger.LogWithConsole( $"Failed to obtain stream manifest! Reply message: {reply.PrintDetails()}" );
+            _logger.LogWithConsole( $"Failed to obtain stream manifest! Reply message: {reply.PrintDetails()}" );
             VideoName = InvalidVideoName;
             Message = PrintError( reply.ErrorType.ToString() );
             HasMessage = true;
@@ -189,7 +179,7 @@ public sealed class MainViewModel : ReactiveObject
         
         // Execute Download
         ServiceReply<bool> reply = await _dlService!.Download(
-            GetDownloadPath(), streamType, _streamQualities.IndexOf( _selectedStreamQualityName ) );
+            _settingsManager.Settings.DownloadLocation, streamType, _streamQualities.IndexOf( _selectedStreamQualityName ) );
 
         Message = reply.Success
             ? SuccessDownloadMessage
@@ -230,7 +220,7 @@ public sealed class MainViewModel : ReactiveObject
     {
         if ( _dlService is null || !Enum.TryParse( _selectedStreamTypeName, out StreamType streamType ) )
         {
-            Logger.LogWithConsole( $"Failed to handle new stream type!" );
+            _logger.LogWithConsole( $"Failed to handle new stream type!" );
             Message = PrintError( ServiceErrorType.AppError.ToString() );
             return;
         }
@@ -246,23 +236,6 @@ public sealed class MainViewModel : ReactiveObject
     void CloseMessage()
     {
         HasMessage = false;
-    }
-    static string ExString( Exception e, string? message = null )
-    {
-        return string.IsNullOrWhiteSpace( message )
-            ? $"{e} : {e.Message}"
-            : $"{message} : {e} : {e.Message}";
-    }
-    public void ShowMessage( string message )
-    {
-        Message = message;
-        HasMessage = true;
-    }
-    string GetDownloadPath()
-    {
-        return SettingsManager is not null
-            ? SettingsManager.Settings.DownloadLocation
-            : SettingsManager.DefaultDownloadDirectory;
     }
     void SetImageBitmap()
     {
@@ -294,21 +267,21 @@ public sealed class MainViewModel : ReactiveObject
         // No Service
         if ( _dlService is null )
         {
-            Logger.LogWithConsole( "Youtube download service is null!" );
+            _logger.LogWithConsole( "Youtube download service is null!" );
             Message = PrintError( ServiceErrorType.AppError.ToString() );
             return false;
         }
         // Invalid Selected Stream Type
         if ( !Enum.TryParse( _selectedStreamTypeName, out streamType ) )
         {
-            Logger.LogWithConsole( "Invalid Stream Type!" );
+            _logger.LogWithConsole( "Invalid Stream Type!" );
             Message = PrintError( ServiceErrorType.AppError.ToString() );
             return false;
         }
         // Invalid Selected Stream Quality
         if ( !_streamQualities.Contains( _selectedStreamQualityName ) )
         {
-            Logger.LogWithConsole( "Invalid _selectedStreamQualityName!" );
+            _logger.LogWithConsole( "Invalid _selectedStreamQualityName!" );
             Message = PrintError( ServiceErrorType.AppError.ToString() );
             return false;
         }
