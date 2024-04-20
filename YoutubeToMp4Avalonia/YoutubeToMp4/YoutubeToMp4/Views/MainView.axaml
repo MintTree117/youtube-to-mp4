@@ -1,16 +1,152 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:YoutubeToMp4.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="YoutubeToMp4.Views.MainView"
-             x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
-  </Design.DataContext>
+<UserControl 
+	x:Class="YoutubeToMp4.Views.MainView"
+	x:DataType="viewModels1:MainViewModel"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:viewModels1="clr-namespace:YoutubeToMp4.ViewModels">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/AppStyles.axaml" />
+    </UserControl.Styles>
 
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <!-- Semi-Transparent Background Overlay -->
+    <Border Classes="bg-overlay" BorderBrush="rgba(90, 90, 90, 1)" BorderThickness="1">
+        <!-- Scroller -->
+        <ScrollViewer>
+            <!-- Main Content -->
+            <StackPanel VerticalAlignment="Center" MaxWidth="500">
+                
+                <!-- Video Image -->
+                <Border
+                    HorizontalAlignment="Center"
+                    Width="150"
+                    Height="150"
+                    Margin="0,0,0,20"
+                    BorderBrush="DarkGray"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                    <!-- Border Background -->
+                    <Border.Background>
+                        <ImageBrush
+                            Opacity="0.6"
+                            Stretch="UniformToFill"
+                            Source="{Binding VideoImageBitmap}" />
+                    </Border.Background>
+                </Border>
+                <!-- Video Title -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,20"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    TextWrapping="Wrap"
+                    Text="{Binding VideoName}" />
+                
+                <!-- Link Box -->
+                <TextBox
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,15"
+                    Padding="20,20,20,20"
+                    Watermark="Paste link here"
+                    Text="{Binding YoutubeLink}" 
+                    IsEnabled="{Binding IsLinkBoxEnabled} "/>
+                <!-- Stream Type -->
+                <ComboBox
+                    HorizontalAlignment="Stretch" 
+                    Margin="0,0,0,15"
+                    Padding="20,20,20,20"
+                    PlaceholderText="Select a stream type"
+                    ItemsSource="{Binding StreamTypes}" 
+                    SelectedItem="{Binding SelectedStreamType}"
+                    IsEnabled="{Binding IsVideoSettingsEnabled}" />
+                <!-- Quality -->
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,15"
+                    Padding="20,20,20,20"
+                    PlaceholderText="Select a stream quality"
+                    ItemsSource="{Binding StreamQualities}" 
+                    SelectedItem="{Binding SelectedStreamQuality}"
+                    IsEnabled="{Binding IsVideoSettingsEnabled}" />
+                
+                <!-- Cut Times Grid -->
+                <Grid 
+                    ColumnDefinitions="*,Auto,*"
+                    Margin="0,0,0,15">
+                    <TextBox Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Padding="20,20,20,20"
+                        Watermark="From: hh:mm:ss"
+                        Text="{Binding StreamStartTime}"
+                        IsEnabled="{Binding IsVideoSettingsEnabled} " />
+                    <Image 
+                        Grid.Column="1"
+                        Margin="5,0">
+                    </Image>
+                    <TextBox 
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Padding="20,20,20,20"
+                        Watermark="To: hh:mm:ss"
+                        Text="{Binding StreamEndTime}"
+                        IsEnabled="{Binding IsVideoSettingsEnabled} " />
+                </Grid>
+                
+                <!-- Submit -->
+                <Button
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="0,0,0,15"
+                    Padding="30,20"
+                    Background="MediumAquamarine"
+                    Command="{Binding DownloadStreamCommand}"
+                    IsEnabled="{Binding IsVideoSettingsEnabled}"
+                    Content="Download" />
+                
+                <!-- Message Box -->
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    Margin="0,0,0,15"
+                    Background="DarkKhaki"
+                    IsVisible="{Binding HasMessage}">
+                    <ScrollViewer Grid.Column="0">
+                        <TextBlock
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            TextAlignment="Center"
+                            Margin="20,20,20,20"
+                            IsVisible="{Binding HasMessage}"
+                            Text="{Binding Message}" />
+                    </ScrollViewer>
+                    <Button 
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        ZIndex="1000"
+                        Content="X"
+                        FontWeight="Bold"
+                        FontSize="22"
+                        Margin="0,0,5,0"
+                        Padding="10"
+                        Foreground="White"
+                        Background="Transparent"
+                        IsVisible="{Binding HasMessage}"
+                        Command="{Binding CloseMessageCommand}">
+                    </Button>
+                </Grid>
+                
+                <!-- Settings Box -->
+                <TextBox
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,15"
+                    Padding="20,20,20,20"
+                    Watermark="Output Directory"
+                    Text="{Binding DownloadLocation}"
+                    IsEnabled="{Binding IsLinkBoxEnabled}"
+                    LostFocus="SettingsChanged"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
 </UserControl>
