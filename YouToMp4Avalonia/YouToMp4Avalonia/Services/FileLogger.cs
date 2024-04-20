@@ -11,11 +11,6 @@ public sealed class FileLogger : SingletonService<FileLogger>
     static readonly string LogPath = Path.Combine( LogDirectory, "logs.txt" );
     static readonly SemaphoreSlim _semaphore = new( 1, 1 );
 
-    public FileLogger()
-    {
-        
-    }
-
     public static async void Log( string message )
     {
         try

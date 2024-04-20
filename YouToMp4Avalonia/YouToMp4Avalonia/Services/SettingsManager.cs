@@ -11,15 +11,14 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
     readonly FileLogger Logger = FileLogger.Instance;
     
     // Constants
-    public const string DefaultDownloadDirectory = "./";
-    const string CacheDirectory = "./Cache";
-    const string CachePath = CacheDirectory + "/Cache.txt";
+    const string UserSettingsDirectory = "./UserSettings";
+    const string UserSettingsFilepath = UserSettingsDirectory + "/UserSettings.txt";
     const string FailLoadMessage = "Failed to load settings file! You can still make changes, but they might not be saved once you close the app.";
     const string FailedSaveMessage = "Failed to save settings to disk! Changes will still persist until you close the app.";
     
     // Settings Model
     public AppSettingsModel Settings { get; private set; }
-    readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
+    string? _loadError;
 
     // Constructor
     public SettingsManager()
@@ -30,14 +29,15 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
     {
         try
         {
-            if ( !File.Exists( CachePath ) )
+            if ( !File.Exists( UserSettingsFilepath ) )
             {
-                Logger.LogWithConsole( $"{ServiceErrorType.IoError} : Settings file doesn't exist" );
+                _loadError = $"{ServiceErrorType.IoError} : Settings file doesn't exist";
+                Logger.LogWithConsole( _loadError );
                 return new AppSettingsModel();
             }
             
-            string json = File.ReadAllText( CachePath );
-            var loadedSettings = JsonSerializer.Deserialize<AppSettingsModel>( json );
+            string json = File.ReadAllText( UserSettingsFilepath );
+            AppSettingsModel? loadedSettings = JsonSerializer.Deserialize( json, AppSettingsModelContext.Default.AppSettingsModel );
             bool loaded = loadedSettings is not null;
             
             if ( loaded )
@@ -47,6 +47,7 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
         }
         catch ( Exception e )
         {
+            _loadError = e.ToString();
             Logger.LogWithConsole( e );
             return new AppSettingsModel();
         }
@@ -57,11 +58,11 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
     {
         try
         {
-            if ( !File.Exists( CachePath ) )
+            if ( !File.Exists( UserSettingsFilepath ) )
                 return new ServiceReply<AppSettingsModel>( Settings, ServiceErrorType.NotFound, FailLoadMessage );
             
-            string json = await File.ReadAllTextAsync( CachePath );
-            var loadedSettings = JsonSerializer.Deserialize<AppSettingsModel>( json );
+            string json = await File.ReadAllTextAsync( UserSettingsFilepath );
+            AppSettingsModel? loadedSettings = JsonSerializer.Deserialize( json, AppSettingsModelContext.Default.AppSettingsModel );
             
             bool loaded = loadedSettings is not null;
 
@@ -82,15 +83,13 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
     {
         try
         {
-            if ( !Directory.Exists( CacheDirectory ) )
-                Directory.CreateDirectory( CacheDirectory );
+            if ( !Directory.Exists( UserSettingsDirectory ) )
+                Directory.CreateDirectory( UserSettingsDirectory );
+            
+            byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes( newSettings, AppSettingsModelContext.Default.AppSettingsModel );
 
-            //string json = JsonSerializer.Serialize( newSettings, _serializerOptions );
-            byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes( newSettings, _serializerOptions );
-
-            await using FileStream fs = new FileStream( CachePath, FileMode.Create );
+            await using FileStream fs = new( UserSettingsFilepath, FileMode.Create );
             await fs.WriteAsync( jsonBytes );
-            //await File.WriteAllTextAsync( CachePath, json );
             return new ServiceReply<bool>( true );
         }
         catch ( Exception e )

@@ -14,6 +14,7 @@ namespace YouToMp4Avalonia.Services;
 public sealed class YoutubeDownloader( string videoUrl )
 {
     // Services
+    public const string DefaultDownloadDirectory = "./";
     readonly FileLogger Logger = FileLogger.Instance;
     readonly HttpService _httpService = new();
     readonly FFmpegService _ffmpegService = new();
