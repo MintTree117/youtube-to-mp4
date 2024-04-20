@@ -152,7 +152,7 @@ public sealed class MainViewModel : ReactiveObject
         
         _dlService = new YoutubeDownloader( _youtubeLink );
 
-        ServiceReply<bool> reply = await _dlService.TryInitialize();
+        Reply<bool> reply = await _dlService.TryInitialize();
         
         if ( !reply.Success )
         {
@@ -181,7 +181,7 @@ public sealed class MainViewModel : ReactiveObject
         TryParseVideoDlTimes( _streamStartTime, _streamEndTime, out TimeSpan? start, out TimeSpan? end );
         StreamSettings streamSettings = new( 
             _settingsManager.Settings.DownloadLocation, streamType, _streamQualities.IndexOf( _selectedStreamQualityName ), start, end );
-        ServiceReply<bool> reply = await _dlService!.Download( streamSettings );
+        Reply<bool> reply = await _dlService!.Download( streamSettings );
 
         Message = reply.Success
             ? SuccessDownloadMessage
@@ -201,7 +201,7 @@ public sealed class MainViewModel : ReactiveObject
             DownloadLocation = _downloadLocation
         };
 
-        ServiceReply<bool> reply = await _settingsManager.SaveSettings( settingsModel );
+        Reply<bool> reply = await _settingsManager.SaveSettings( settingsModel );
 
         if ( !reply.Success )
         {

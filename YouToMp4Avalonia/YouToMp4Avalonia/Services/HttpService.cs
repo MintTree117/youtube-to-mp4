@@ -13,7 +13,7 @@ public sealed class HttpService
     readonly FileLogger _logger = FileLogger.Instance;
     
     // Public Methods
-    public async Task<ServiceReply<Stream?>> TryGetStream( string url )
+    public async Task<Reply<Stream?>> TryGetStream( string url )
     {
         try
         {
@@ -23,12 +23,12 @@ public sealed class HttpService
         catch ( Exception e )
         {
             _logger.LogWithConsole( e );
-            return new ServiceReply<Stream?>( ServiceErrorType.ServerError, $"Get Stream: Exception occurred while sending API request." );
+            return new Reply<Stream?>( ServiceErrorType.ServerError, $"Get Stream: Exception occurred while sending API request." );
         }
     }
     
     // Private Utils
-    async Task<ServiceReply<Stream?>> HandleImageStreamHttpResponse( HttpResponseMessage httpResponse )
+    async Task<Reply<Stream?>> HandleImageStreamHttpResponse( HttpResponseMessage httpResponse )
     {
         if ( !httpResponse.IsSuccessStatusCode ) 
             return await HandleHttpError<Stream?>( httpResponse );
@@ -38,13 +38,13 @@ public sealed class HttpService
         await stream.CopyToAsync( memoryStream ); // Copy the stream to a MemoryStream
         await stream.DisposeAsync();
         
-        return new ServiceReply<Stream?>( memoryStream );
+        return new Reply<Stream?>( memoryStream );
     }
-    async Task<ServiceReply<T?>> HandleHttpError<T>( HttpResponseMessage httpResponse )
+    async Task<Reply<T?>> HandleHttpError<T>( HttpResponseMessage httpResponse )
     {
         string errorContent = await httpResponse.Content.ReadAsStringAsync();
-        ServiceErrorType errorType = ServiceReply<object>.GetHttpError( httpResponse.StatusCode );
+        ServiceErrorType errorType = Reply<object>.GetHttpError( httpResponse.StatusCode );
         _logger.LogWithConsole( $"{errorContent}" );
-        return new ServiceReply<T?>( errorType, errorContent );
+        return new Reply<T?>( errorType, errorContent );
     }
 }

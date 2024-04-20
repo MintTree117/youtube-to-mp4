@@ -4,7 +4,8 @@ namespace YouToMp4Avalonia.Models;
 
 public sealed record AppSettingsModel
 {
-    public string DownloadLocation { get; init; } = string.Empty;
+    const string DefaultDownloadDirectory = "./";
+    public string DownloadLocation { get; init; } = DefaultDownloadDirectory;
 }
 
 [JsonSourceGenerationOptions( WriteIndented = true )] [JsonSerializable( typeof( AppSettingsModel ) )]

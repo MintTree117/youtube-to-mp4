@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using YouToMp4Avalonia.Models;
 
 namespace YouToMp4Avalonia.Services;
 
@@ -15,14 +16,20 @@ public sealed class FFmpegService
     const string TempVideoFileName = "temp_video.mp4";
     const string TempThumbnailFileName = "temp_thumbnail.jpg";
     const string TempThumbnailConvertedFileName = "temp_thumbnail_converted.jpg";
+
+    const string MessageNoBytesFound = "The image bytes for thumbnail are null!";
+    const string MessageFailGetFFmpegPath = "Failed to get ffmpeg path!";
+    const string MessageFailStartCutProcess = "Failed to start ffmpeg cut process!";
+    const string MessageManualKillProcess = "Process was killed manually!";
+    const string MessageFailImage = "Failed to create thumbnail image!";
     
     // Public Methods
-    public async Task<bool> TryCutVideo( string videoPath, TimeSpan startTime, TimeSpan endTime )
+    public async Task<Reply<bool>> TryCutVideo( string videoPath, TimeSpan startTime, TimeSpan endTime )
     {
         if ( !GetFFmpegPath( out string ffmpegPath ) )
         {
-            _logger.LogWithConsole( "Failed to get ffmpeg path!" );
-            return false;   
+            _logger.LogWithConsole( MessageFailGetFFmpegPath );
+            return new Reply<bool>( ServiceErrorType.IoError, MessageFailGetFFmpegPath );   
         }
 
         string tempVideoPath = GetTempVideoPath(); // the cut video
@@ -41,8 +48,8 @@ public sealed class FFmpegService
         {
             if ( !cutProcess.Start() )
             {
-                _logger.LogWithConsole( "Failed to start ffmpeg cut process!" );
-                return false;
+                _logger.LogWithConsole( MessageFailStartCutProcess );
+                return new Reply<bool>( ServiceErrorType.ExternalError, MessageFailStartCutProcess );
             }
             
             await cutProcess.WaitForExitAsync();
@@ -55,27 +62,35 @@ public sealed class FFmpegService
             File.Delete( videoPath ); // Delete original file
             File.Move( tempVideoPath, videoPath ); // Move the cut video file to original path
 
-            _logger.LogWithConsole( "Video cut successfully!" );
-            return true;
+            return new Reply<bool>( true );
         }
         catch ( Exception e )
         {
             _logger.LogWithConsole( e, e.Message );
-            return false;
+            return new Reply<bool>( ServiceErrorType.ExternalError, e.Message );
         }
         finally
         {
             if ( !cutProcess.HasExited )
             {
                 cutProcess.Kill();
-                _logger.LogWithConsole( "Process was killed manually!" );
+                _logger.LogWithConsole( MessageManualKillProcess );
             }
         }
     }
-    public async Task TryAddImage( string videoPath, byte[]? _thumbnailBytes )
+    public async Task<Reply<bool>> TryAddImage( string videoPath, byte[]? _thumbnailBytes )
     {
-        if ( _thumbnailBytes is null || !GetFFmpegPath( out string ffmpegPath ) )
-            return;
+        if ( _thumbnailBytes is null )
+        {
+            _logger.LogWithConsole( MessageNoBytesFound );
+            return new Reply<bool>( ServiceErrorType.NotFound, MessageNoBytesFound );
+        }
+        
+        if ( !GetFFmpegPath( out string ffmpegPath ) )
+        {
+            _logger.LogWithConsole( MessageFailGetFFmpegPath );
+            return new Reply<bool>( ServiceErrorType.IoError, MessageFailGetFFmpegPath );
+        }
 
         string tempThumbnailPath = Path.Combine( Path.GetTempPath(), TempThumbnailFileName );
         string tempConvertedThumbnailPath = Path.Combine( Path.GetTempPath(), TempThumbnailConvertedFileName );
@@ -88,14 +103,20 @@ public sealed class FFmpegService
             await CreateVideoWithImageFFMPEG( videoPath, tempConvertedThumbnailPath, tempVideoPath, ffmpegPath );
 
             if ( !File.Exists( tempVideoPath ) )
-                return;
+            {
+                _logger.LogWithConsole( MessageFailImage );
+                return new Reply<bool>( ServiceErrorType.ExternalError, MessageFailImage );
+            }
 
             File.Delete( videoPath ); // Delete original file
             File.Move( tempVideoPath, videoPath ); // Move the temp file to original path
+
+            return new Reply<bool>( true );
         }
         catch ( Exception e )
         {
             _logger.LogWithConsole( e );
+            return new Reply<bool>( ServiceErrorType.ExternalError, $"{MessageFailImage} : {e.Message}" );
         }
         finally
         {
@@ -163,10 +184,6 @@ public sealed class FFmpegService
     }
     static bool GetFFmpegPath( out string path )
     {
-        /*string currentDirectory = Directory.GetCurrentDirectory();
-        path = Path.Combine( currentDirectory, FFmpegPath );
-        return File.Exists( path );*/
-
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         string ffmpegFolder = Path.Combine( baseDirectory, FFmpegFolderName );
         path = Path.Combine( ffmpegFolder, FFmpegFileName );
@@ -176,6 +193,5 @@ public sealed class FFmpegService
     {
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         return Path.Combine( baseDirectory, TempVideoFileName );
-        //return Path.Combine( Path.GetTempPath(), TempVideoFileName );
     }
 }

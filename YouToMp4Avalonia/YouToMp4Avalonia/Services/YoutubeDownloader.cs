@@ -14,8 +14,7 @@ namespace YouToMp4Avalonia.Services;
 public sealed class YoutubeDownloader( string videoUrl )
 {
     // Services
-    public const string DefaultDownloadDirectory = "./";
-    readonly FileLogger Logger = FileLogger.Instance;
+    readonly FileLogger _logger = FileLogger.Instance;
     readonly HttpService _httpService = new();
     readonly FFmpegService _ffmpegService = new();
     readonly YoutubeClient _youtubeClient = new();
@@ -42,7 +41,7 @@ public sealed class YoutubeDownloader( string videoUrl )
     List<string>? _videoSteamQualities;
     
     // Public Methods
-    public async Task<ServiceReply<bool>> TryInitialize()
+    public async Task<Reply<bool>> TryInitialize()
     {
         try
         {
@@ -51,15 +50,15 @@ public sealed class YoutubeDownloader( string videoUrl )
             
             // Get Video Image Data
             await LoadStreamThumbnailImage( _video.Thumbnails.Count > 0 ? _video.Thumbnails[ 0 ].Url : "" );
-            
+
             return _streamManifest is not null && _video is not null
-                ? new ServiceReply<bool>( true )
-                : new ServiceReply<bool>( ServiceErrorType.NotFound );
+                ? new Reply<bool>( true )
+                : new Reply<bool>( ServiceErrorType.NotFound, "Stream manifest failed to load" );
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( e );
-            return new ServiceReply<bool>( ServiceErrorType.ServerError );
+            _logger.LogWithConsole( e );
+            return new Reply<bool>( ServiceErrorType.ServerError, e.Message );
         }
     }
     public async Task<List<string>> GetStreamInfo( StreamType steamType )
@@ -69,10 +68,10 @@ public sealed class YoutubeDownloader( string videoUrl )
             StreamType.Mixed => await GetMixedStreams(),
             StreamType.Audio => await GetAudioStreams(),
             StreamType.Video => await GetVideoStreams(),
-            _ => throw new Exception( "Invalid Stream Type!" )
+            _ => await GetMixedStreams()
         };
     }
-    public async Task<ServiceReply<bool>> Download( StreamSettings settings )
+    public async Task<Reply<bool>> Download( StreamSettings settings )
     {
         IStreamInfo streamInfo = settings.Type switch
         {
@@ -84,27 +83,16 @@ public sealed class YoutubeDownloader( string videoUrl )
         
         try
         {
-            string path = ConstructDownloadPath( settings.Filepath, streamInfo.Container.Name );
-            
-            await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
-
-            if ( settings.Start is not null && settings.End is not null )
-            {
-                await _ffmpegService.TryCutVideo( path, settings.Start.Value, settings.End.Value );
-            }
-            
-            await _ffmpegService.TryAddImage( path, _thumbnailBytes );
-            
-            return new ServiceReply<bool>( true );
+            return await TryDownloadStream( settings, streamInfo );
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( e );
-            return new ServiceReply<bool>( ServiceErrorType.ServerError );
+            _logger.LogWithConsole( e );
+            return new Reply<bool>( ServiceErrorType.AppError, e.Message );
         }
     }
 
-    // Get Streams
+    // Private Utils
     async Task<List<string>> GetMixedStreams()
     {
         return await Task.Run( () => {
@@ -161,8 +149,43 @@ public sealed class YoutubeDownloader( string videoUrl )
             return _videoSteamQualities;
         } );
     }
-    
-    // Get Download Path
+    async Task<Reply<bool>> TryDownloadStream( StreamSettings settings, IStreamInfo streamInfo )
+    {
+        string path = ConstructDownloadPath( settings.Filepath, streamInfo.Container.Name );
+
+        await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
+        
+        if ( settings.Start is null || settings.End is null )
+            return await _ffmpegService.TryAddImage( path, _thumbnailBytes );
+
+        Reply<bool> cutResult = await _ffmpegService.TryCutVideo( path, settings.Start.Value, settings.End.Value );
+
+        if ( !cutResult.Success )
+            return cutResult;
+
+        return await _ffmpegService.TryAddImage( path, _thumbnailBytes );
+    }
+    async Task LoadStreamThumbnailImage( string url )
+    {
+        Reply<Stream?> reply = await _httpService.TryGetStream( url );
+
+        if ( !reply.Success || reply.Data is null )
+        {
+            _logger.LogWithConsole( $"Failed to load thumbnail image! : {reply.PrintDetails()}" );
+            return;
+        }
+
+        reply.Data.Position = 0; // reset stream pointer!
+        ThumbnailBitmap = new Bitmap( reply.Data );
+
+        reply.Data.Position = 0;
+        await using MemoryStream memoryStream = new();
+        await reply.Data.CopyToAsync( memoryStream );
+        await reply.Data.DisposeAsync();
+
+        memoryStream.Position = 0;
+        _thumbnailBytes = memoryStream.ToArray();
+    }
     string ConstructDownloadPath( string outputDirectory, string fileExtension )
     {
         string videoName = SanitizeVideoName( _video!.Title );
@@ -174,27 +197,5 @@ public sealed class YoutubeDownloader( string videoUrl )
             return Path.GetInvalidFileNameChars().Aggregate( videoName,
                 ( current, invalidChar ) => current.Replace( invalidChar, '-' ) );
         }
-    }
-    
-    // Image
-    async Task LoadStreamThumbnailImage( string url )
-    {
-        ServiceReply<Stream?> reply = await _httpService.TryGetStream( url );
-
-        if ( !reply.Success || reply.Data is null )
-            return;
-        
-        reply.Data.Position = 0; // reset stream pointer!
-        ThumbnailBitmap = new Bitmap( reply.Data );
-
-        reply.Data.Position = 0; 
-        
-        await using MemoryStream memoryStream = new();
-        await reply.Data.CopyToAsync( memoryStream );
-        await reply.Data.DisposeAsync();
-
-        memoryStream.Position = 0;
-        
-        _thumbnailBytes = memoryStream.ToArray();
     }
 }

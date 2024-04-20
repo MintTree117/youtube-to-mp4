@@ -54,12 +54,12 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
     }
     
     // Public Methods
-    public async Task<ServiceReply<AppSettingsModel>> LoadSettingsAsync()
+    public async Task<Reply<AppSettingsModel>> LoadSettingsAsync()
     {
         try
         {
             if ( !File.Exists( UserSettingsFilepath ) )
-                return new ServiceReply<AppSettingsModel>( Settings, ServiceErrorType.NotFound, FailLoadMessage );
+                return new Reply<AppSettingsModel>( Settings, ServiceErrorType.NotFound, FailLoadMessage );
             
             string json = await File.ReadAllTextAsync( UserSettingsFilepath );
             AppSettingsModel? loadedSettings = JsonSerializer.Deserialize( json, AppSettingsModelContext.Default.AppSettingsModel );
@@ -70,16 +70,16 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
                 Settings = loadedSettings!;
 
             return loaded
-                ? new ServiceReply<AppSettingsModel>( Settings )
-                : new ServiceReply<AppSettingsModel>( Settings, ServiceErrorType.NotFound, FailLoadMessage );
+                ? new Reply<AppSettingsModel>( Settings )
+                : new Reply<AppSettingsModel>( Settings, ServiceErrorType.NotFound, FailLoadMessage );
         }
         catch ( Exception e )
         {
             Logger.LogWithConsole( e );
-            return new ServiceReply<AppSettingsModel>( ServiceErrorType.IoError, FailLoadMessage );
+            return new Reply<AppSettingsModel>( ServiceErrorType.IoError, FailLoadMessage );
         }
     }
-    public async Task<ServiceReply<bool>> SaveSettings( AppSettingsModel newSettings )
+    public async Task<Reply<bool>> SaveSettings( AppSettingsModel newSettings )
     {
         try
         {
@@ -90,12 +90,12 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
 
             await using FileStream fs = new( UserSettingsFilepath, FileMode.Create );
             await fs.WriteAsync( jsonBytes );
-            return new ServiceReply<bool>( true );
+            return new Reply<bool>( true );
         }
         catch ( Exception e )
         {
             Logger.LogWithConsole( e );
-            return new ServiceReply<bool>( ServiceErrorType.IoError, FailedSaveMessage );
+            return new Reply<bool>( ServiceErrorType.IoError, FailedSaveMessage );
         }
         finally
         {

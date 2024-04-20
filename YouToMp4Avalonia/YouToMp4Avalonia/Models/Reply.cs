@@ -14,28 +14,29 @@ public enum ServiceErrorType
     ServerError,
     NetworkError,
     BadRequest,
-    AppError
+    AppError,
+    ExternalError
 }
 
-public sealed record ServiceReply<T>
+public sealed record Reply<T>
 {
     const string MESSAGE_RESPONSE_ERROR = "Failed to produce a proper response message!";
 
-    public ServiceReply( ServiceErrorType errorType, string? message = null )
+    public Reply( ServiceErrorType errorType, string? message = null )
     {
         Data = default;
         Success = false;
         ErrorType = errorType;
         Message = message ?? GetDefaultMessage( errorType );
     }
-    public ServiceReply( T data, ServiceErrorType errorType, string? message = null )
+    public Reply( T data, ServiceErrorType errorType, string? message = null )
     {
-        Data = default;
+        Data = data;
         Success = false;
         ErrorType = errorType;
         Message = message ?? GetDefaultMessage( errorType );
     }
-    public ServiceReply( T data )
+    public Reply( T data )
     {
         Data = data;
         Success = true;
