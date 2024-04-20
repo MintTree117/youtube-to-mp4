@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageReference Include="SharpCompress" Version="0.36.0" />
+    <PackageReference Include="YoutubeExplode" Version="6.3.13" />
+    <ProjectReference Include="..\YoutubeToMp4.Shared\YoutubeToMp4.Shared.csproj" />
+    <ProjectReference Include="..\YoutubeToMp4.Client\YoutubeToMp4.Client.csproj" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Components\App.razor" />
+    <None Include="Components\Layout\MainLayout.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="ffmpeg-6.1.1\ffbuild\.config" />
+  </ItemGroup>
+
+</Project>

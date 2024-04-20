@@ -1,0 +1,9 @@
+<div class="meta-section loading-container mb-4 @Page.LoaderCss">
+    <div class="loading-circle mb-4"></div>
+    <span>@Page.LoadingMessage</span>
+</div>
+
+@code 
+{
+    [Parameter] public PageBase Page { get; set; } = default!;
+}
