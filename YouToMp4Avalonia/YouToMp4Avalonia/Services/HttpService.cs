@@ -9,10 +9,11 @@ using YouToMp4Avalonia.Models;
 
 namespace YouToMp4Avalonia.Services;
 
-// Singleton Service
-public class HttpController : BaseService
+public class HttpService
 {
+    // Services
     readonly HttpClient _http = new();
+    readonly FileLogger Logger = FileLogger.Instance;
     
     public async Task<ServiceReply<Stream?>> TryGetStream( string apiPath, Dictionary<string, object>? parameters = null, string? authToken = null )
     {
@@ -140,7 +141,7 @@ public class HttpController : BaseService
     
     ServiceReply<T?> HandleHttpException<T>( Exception e, string requestType )
     {
-        Logger.LogWithConsole( ExString( e ) );
+        Logger.LogWithConsole( e );
         return new ServiceReply<T?>( ServiceErrorType.ServerError, $"{requestType}: Exception occurred while sending API request." );
     }
     void SetAuthHttpHeader( string? token )

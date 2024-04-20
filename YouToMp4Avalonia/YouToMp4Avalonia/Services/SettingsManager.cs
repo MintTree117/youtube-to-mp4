@@ -8,6 +8,8 @@ namespace YouToMp4Avalonia.Services;
 
 public sealed class SettingsManager : SingletonService<SettingsManager>
 {
+    readonly FileLogger Logger = FileLogger.Instance;
+    
     // Constants
     public const string DefaultDownloadDirectory = "./";
     const string CacheDirectory = "./Cache";
@@ -45,7 +47,7 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
             return new AppSettingsModel();
         }
     }
@@ -72,7 +74,7 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
             return new ServiceReply<AppSettingsModel>( ServiceErrorType.IoError, FailLoadMessage );
         }
     }
@@ -93,7 +95,7 @@ public sealed class SettingsManager : SingletonService<SettingsManager>
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
             return new ServiceReply<bool>( ServiceErrorType.IoError, FailedSaveMessage );
         }
         finally

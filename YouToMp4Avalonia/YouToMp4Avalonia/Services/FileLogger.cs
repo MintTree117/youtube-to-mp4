@@ -11,6 +11,11 @@ public sealed class FileLogger : SingletonService<FileLogger>
     static readonly string LogPath = Path.Combine( LogDirectory, "logs.txt" );
     static readonly SemaphoreSlim _semaphore = new( 1, 1 );
 
+    public FileLogger()
+    {
+        
+    }
+
     public static async void Log( string message )
     {
         try
@@ -34,9 +39,26 @@ public sealed class FileLogger : SingletonService<FileLogger>
             _semaphore.Release();
         }
     }
+    public static void LogEx( Exception e, string? message = null )
+    {
+        string m = string.IsNullOrWhiteSpace( message )
+            ? $"{e} : {e.Message}"
+            : $"{message} : {e} : {e.Message}";
+
+        Log( m );
+    }
     public void LogWithConsole( string message )
     {
         Console.WriteLine( message );
         Log( message );
+    }
+    public void LogWithConsole( Exception e, string? message = null )
+    {
+        string m = string.IsNullOrWhiteSpace( message )
+            ? $"{e} : {e.Message}"
+            : $"{message} : {e} : {e.Message}";
+
+        Console.WriteLine( m );
+        Log( m );
     }
 }

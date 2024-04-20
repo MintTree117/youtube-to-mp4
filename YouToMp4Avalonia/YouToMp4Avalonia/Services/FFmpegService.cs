@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 
 namespace YouToMp4Avalonia.Services;
 
-public sealed class FFmpegService : BaseService
+public sealed class FFmpegService
 {
+    readonly FileLogger Logger = FileLogger.Instance;
+
+    
     const string FFmpegFolderName = "ffmpeg";
     const string FFmpegFileName = "ffmpeg";
     const string TempVideoFileName = "temp_video.mp4";
@@ -36,7 +39,7 @@ public sealed class FFmpegService : BaseService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
         }
         finally
         {
@@ -67,7 +70,7 @@ public sealed class FFmpegService : BaseService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
         }
         finally
         {
@@ -92,7 +95,7 @@ public sealed class FFmpegService : BaseService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
         }
         finally
         {
@@ -110,7 +113,6 @@ public sealed class FFmpegService : BaseService
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         string ffmpegFolder = Path.Combine( baseDirectory, FFmpegFolderName );
         path = Path.Combine( ffmpegFolder, FFmpegFileName );
-        Console.WriteLine("FFMPEG " + File.Exists( path ));
         return File.Exists( path );
     }
 }

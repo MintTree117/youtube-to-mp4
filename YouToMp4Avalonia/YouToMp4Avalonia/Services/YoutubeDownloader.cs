@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
-using Microsoft.Extensions.DependencyInjection;
 using YouToMp4Avalonia.Models;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -12,10 +11,11 @@ using YoutubeExplode.Videos.Streams;
 
 namespace YouToMp4Avalonia.Services;
 
-public sealed class YoutubeDownloader( string videoUrl ) : BaseService
+public sealed class YoutubeDownloader( string videoUrl )
 {
     // Services
-    readonly HttpController _httpService = Program.ServiceProvider.GetService<HttpController>()!;
+    readonly FileLogger Logger = FileLogger.Instance;
+    readonly HttpService _httpService = new();
     readonly FFmpegService _ffmpegService = new();
     readonly YoutubeClient _youtubeClient = new();
     
@@ -25,12 +25,9 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
     // Stream Data
     public string? VideoName => _video?.Title;
     public TimeSpan? VideoDuration => _video?.Duration;
-    public string? VideoImage => _video?.Thumbnails.FirstOrDefault()?.Url;
-    public byte[]? ThumbnailBytes => _thumbnailBytes;
-    public Bitmap? ThumbnailBitmap => _thumbnailBitmap;
+    public Bitmap? ThumbnailBitmap { get; private set; }
     StreamManifest? _streamManifest;
     Video? _video;
-    Bitmap? _thumbnailBitmap;
     byte[]? _thumbnailBytes;
     
     // Streams
@@ -60,7 +57,7 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
             return new ServiceReply<bool>( ServiceErrorType.ServerError );
         }
     }
@@ -95,7 +92,7 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( ExString( e ) );
+            Logger.LogWithConsole( e );
             return new ServiceReply<bool>( ServiceErrorType.ServerError );
         }
     }
@@ -181,11 +178,15 @@ public sealed class YoutubeDownloader( string videoUrl ) : BaseService
             return;
         
         reply.Data.Position = 0; // reset stream pointer!
-        _thumbnailBitmap = new Bitmap( reply.Data );
+        ThumbnailBitmap = new Bitmap( reply.Data );
+
+        reply.Data.Position = 0; 
         
         await using MemoryStream memoryStream = new();
         await reply.Data.CopyToAsync( memoryStream );
         await reply.Data.DisposeAsync();
+
+        memoryStream.Position = 0;
         
         _thumbnailBytes = memoryStream.ToArray();
     }

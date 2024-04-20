@@ -46,13 +46,13 @@ public sealed class MainViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> DownloadCommand { get; }
     public ReactiveCommand<Unit, Unit> SettingsCommand { get; }
     public ReactiveCommand<Unit, Unit> CloseMessageCommand { get; }
-    ReactiveCommand<Unit, Unit> LoadDataCommand { get; }
+    ReactiveCommand<Unit, Unit> HandleNewLinkCommand { get; }
     ReactiveCommand<Unit, Unit> NewStreamCommand { get; }
 
     // Constructor
     public MainViewModel()
     {
-        LoadDataCommand = ReactiveCommand.CreateFromTask( HandleNewLink );
+        HandleNewLinkCommand = ReactiveCommand.CreateFromTask( HandleNewLink );
         DownloadCommand = ReactiveCommand.CreateFromTask( DownloadStream );
         NewStreamCommand = ReactiveCommand.CreateFromTask( HandleNewStreamType );
         SettingsCommand = ReactiveCommand.CreateFromTask( UpdateSettings );
@@ -85,7 +85,7 @@ public sealed class MainViewModel : ReactiveObject
         set
         {
             this.RaiseAndSetIfChanged( ref _youtubeLink, value );
-            LoadDataCommand.Execute();
+            HandleNewLinkCommand.Execute();
         }
     }
     public string VideoName
@@ -158,7 +158,6 @@ public sealed class MainViewModel : ReactiveObject
             _logger.LogWithConsole( $"Failed to obtain stream manifest! Reply message: {reply.PrintDetails()}" );
             VideoName = InvalidVideoName;
             Message = PrintError( reply.ErrorType.ToString() );
-            HasMessage = true;
             _dlService = null;
             return;
         }
@@ -220,8 +219,7 @@ public sealed class MainViewModel : ReactiveObject
     {
         if ( _dlService is null || !Enum.TryParse( _selectedStreamTypeName, out StreamType streamType ) )
         {
-            _logger.LogWithConsole( $"Failed to handle new stream type!" );
-            Message = PrintError( ServiceErrorType.AppError.ToString() );
+            _logger.LogWithConsole( PrintError( ServiceErrorType.AppError.ToString() ) );
             return;
         }
 
