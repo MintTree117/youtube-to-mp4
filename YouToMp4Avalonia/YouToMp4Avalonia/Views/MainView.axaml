@@ -1,6 +1,6 @@
 <UserControl 
-	x:Class="YouToMp4Avalonia.Views.YtDownloaderView"
-	x:DataType="viewModels1:YtDownloaderViewModel"
+	x:Class="YouToMp4Avalonia.Views.MainView"
+	x:DataType="viewModels1:MainViewModel"
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:viewModels1="clr-namespace:YouToMp4Avalonia.ViewModels"

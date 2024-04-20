@@ -12,7 +12,7 @@ using YouToMp4Avalonia.Services;
 
 namespace YouToMp4Avalonia.ViewModels;
 
-public sealed class YtDownloaderViewModel : ReactiveObject
+public sealed class MainViewModel : ReactiveObject
 {
     // Services
     readonly FileLogger Logger = Program.ServiceProvider.GetService<FileLogger>()!;
@@ -53,7 +53,7 @@ public sealed class YtDownloaderViewModel : ReactiveObject
     ReactiveCommand<Unit, Unit> NewStreamCommand { get; }
 
     // Constructor
-    public YtDownloaderViewModel()
+    public MainViewModel()
     {
         LoadDataCommand = ReactiveCommand.CreateFromTask( HandleNewLink );
         DownloadCommand = ReactiveCommand.CreateFromTask( DownloadStream );

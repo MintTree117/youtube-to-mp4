@@ -21,5 +21,5 @@
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
     
-    <viewModels:YtDownloaderViewModel></viewModels:YtDownloaderViewModel>
+    <viewModels:MainViewModel></viewModels:MainViewModel>
 </Window>

@@ -5,11 +5,11 @@ using YouToMp4Avalonia.ViewModels;
 
 namespace YouToMp4Avalonia.Views;
 
-public sealed partial class YtDownloaderView : UserControl
+public sealed partial class MainView : UserControl
 {
-    public YtDownloaderView()
+    public MainView()
     {
-        DataContext = new YtDownloaderViewModel();
+        DataContext = new MainViewModel();
         InitializeComponent();
     }
     void InitializeComponent()
@@ -18,6 +18,6 @@ public sealed partial class YtDownloaderView : UserControl
     }
     void SettingsChanged( object? sender, RoutedEventArgs args )
     {
-        ( ( YtDownloaderViewModel ) DataContext! ).SettingsCommand.Execute();
+        ( ( MainViewModel ) DataContext! ).SettingsCommand.Execute();
     }
 }
