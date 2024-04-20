@@ -1,4 +1,4 @@
-namespace YouToMp4Avalonia.Models;
+namespace YoutubeToMp4.Models;
 
 public enum StreamType
 {

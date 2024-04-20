@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using YouToMp4Avalonia.ViewModels;
+using YoutubeToMp4.ViewModels;
 
-namespace YouToMp4Avalonia.Views;
+namespace YoutubeToMp4.Views;
 
 public sealed partial class MainView : UserControl
 {

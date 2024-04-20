@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
-using YouToMp4Avalonia.Models;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
+using YoutubeToMp4.Models;
 
-namespace YouToMp4Avalonia.Services;
+namespace YoutubeToMp4.Services;
 
 public sealed class YoutubeDownloader( string videoUrl )
 {

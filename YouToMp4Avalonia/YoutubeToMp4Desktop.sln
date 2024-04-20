@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouToMp4Avalonia", "YouToMp4Avalonia\YouToMp4Avalonia.csproj", "{B6C93B07-674B-4A89-BB3B-998CE2EBBE92}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeToMp4", "YoutubeToMp4\YoutubeToMp4.csproj", "{B6C93B07-674B-4A89-BB3B-998CE2EBBE92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

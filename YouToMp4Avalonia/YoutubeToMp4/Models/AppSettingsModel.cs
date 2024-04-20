@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace YouToMp4Avalonia.Models;
+namespace YoutubeToMp4.Models;
 
 public sealed record AppSettingsModel
 {

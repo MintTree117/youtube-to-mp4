@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace YouToMp4Avalonia.Services;
+namespace YoutubeToMp4.Services;
 
 public sealed class FileLogger : SingletonService<FileLogger>
 {

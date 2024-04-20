@@ -1,9 +1,9 @@
 <UserControl 
-	x:Class="YouToMp4Avalonia.Views.MainView"
+	x:Class="YoutubeToMp4.Views.MainView"
 	x:DataType="viewModels1:MainViewModel"
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:viewModels1="clr-namespace:YouToMp4Avalonia.ViewModels">
+	xmlns:viewModels1="clr-namespace:YoutubeToMp4.ViewModels">
     
     <UserControl.Styles>
         <StyleInclude Source="/Styles/AppStyles.axaml" />

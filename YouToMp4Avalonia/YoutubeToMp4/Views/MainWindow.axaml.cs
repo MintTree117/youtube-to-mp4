@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace YouToMp4Avalonia.Views;
+namespace YoutubeToMp4.Views;
 
 public sealed partial class MainWindow : Window
 {

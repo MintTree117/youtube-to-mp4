@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using YouToMp4Avalonia.Models;
+using YoutubeToMp4.Models;
 
-namespace YouToMp4Avalonia.Services;
+namespace YoutubeToMp4.Services;
 
 public sealed class FFmpegService
 {

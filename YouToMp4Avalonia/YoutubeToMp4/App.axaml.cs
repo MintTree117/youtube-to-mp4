@@ -2,9 +2,9 @@ using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using YouToMp4Avalonia.Views;
+using YoutubeToMp4.Views;
 
-namespace YouToMp4Avalonia;
+namespace YoutubeToMp4;
 
 public sealed partial class App : Application
 {

@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using ReactiveUI;
 
-namespace YouToMp4Avalonia;
+namespace YoutubeToMp4;
 
 public sealed class ViewLocator : IDataTemplate
 {

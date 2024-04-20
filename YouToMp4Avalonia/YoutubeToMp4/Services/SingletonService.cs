@@ -1,4 +1,4 @@
-namespace YouToMp4Avalonia.Services;
+namespace YoutubeToMp4.Services;
 
 public class SingletonService<T> where T : new()
 {

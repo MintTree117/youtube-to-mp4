@@ -1,9 +1,9 @@
 ﻿using System;
 using Avalonia;
 using Avalonia.ReactiveUI;
-using YouToMp4Avalonia.Services;
+using YoutubeToMp4.Services;
 
-namespace YouToMp4Avalonia;
+namespace YoutubeToMp4;
 
 sealed class Program
 {

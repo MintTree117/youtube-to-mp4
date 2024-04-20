@@ -1,8 +1,8 @@
 <Application 
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:Class="YouToMp4Avalonia.App"
-    xmlns:local="using:YouToMp4Avalonia"
+    x:Class="YoutubeToMp4.App"
+    xmlns:local="using:YoutubeToMp4"
     RequestedThemeVariant="Default">
     
     <Application.DataTemplates>
@@ -11,6 +11,6 @@
 
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://YouToMp4Avalonia/Styles/AppStyles.axaml" />
+        <StyleInclude Source="avares://YoutubeToMp4/Styles/AppStyles.axaml" />
     </Application.Styles>
 </Application>

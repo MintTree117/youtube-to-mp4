@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
-using YouToMp4Avalonia.Models;
-using YouToMp4Avalonia.Services;
+using YoutubeToMp4.Models;
+using YoutubeToMp4.Services;
 
-namespace YouToMp4Avalonia.ViewModels;
+namespace YoutubeToMp4.ViewModels;
 
 public sealed class MainViewModel : ReactiveObject
 {
@@ -26,7 +26,7 @@ public sealed class MainViewModel : ReactiveObject
     const string InvalidVideoName = "Invalid Video Link";
     const string SuccessDownloadMessage = "Download success!";
     const string FailDownloadMessage = "Failed to download!";
-    const string DefaultVideoImage = "avares://YouToMp4Avalonia/Assets/default_stream_image.png";
+    const string DefaultVideoImage = "avares://YoutubeToMp4/Assets/default_stream_image.png";
     
     // Property Field List Values
     Bitmap? _videoImageBitmap;

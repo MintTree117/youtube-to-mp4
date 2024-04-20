@@ -6,7 +6,6 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <RootNamespace>YouToMp4Avalonia</RootNamespace>
         <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
         <PublishTrimmed>true</PublishTrimmed>
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
