@@ -107,7 +107,7 @@
                     Margin="0,0,0,15"
                     Padding="30,20"
                     Background="MediumAquamarine"
-                    Command="{Binding DownloadCommand}"
+                    Command="{Binding DownloadStreamCommand}"
                     IsEnabled="{Binding IsVideoSettingsEnabled}"
                     Content="Download" />
                 <!-- Message Box -->
