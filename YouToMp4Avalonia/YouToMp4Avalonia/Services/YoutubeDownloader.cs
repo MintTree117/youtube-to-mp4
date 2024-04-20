@@ -71,22 +71,28 @@ public sealed class YoutubeDownloader( string videoUrl )
             _ => throw new Exception( "Invalid Stream Type!" )
         };
     }
-    public async Task<ServiceReply<bool>> Download( string filepath, StreamType type, int qualityIndex )
+    public async Task<ServiceReply<bool>> Download( StreamSettings settings )
     {
-        IStreamInfo streamInfo = type switch
+        IStreamInfo streamInfo = settings.Type switch
         {
-            StreamType.Mixed => _mixedStreams[ qualityIndex ],
-            StreamType.Audio => _audioStreams[ qualityIndex ],
-            StreamType.Video => _videoStreams[ qualityIndex ],
-            _ => _mixedStreams[ qualityIndex ]
+            StreamType.Mixed => _mixedStreams[ settings.QualityIndex ],
+            StreamType.Audio => _audioStreams[ settings.QualityIndex ],
+            StreamType.Video => _videoStreams[ settings.QualityIndex ],
+            _ => _mixedStreams[ settings.QualityIndex ]
         };
         
         try
         {
-            string path = ConstructDownloadPath( filepath, streamInfo.Container.Name );
+            string path = ConstructDownloadPath( settings.Filepath, streamInfo.Container.Name );
             
             await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
-            await _ffmpegService.AddImage( path, _thumbnailBytes );
+
+            if ( settings.Start is not null && settings.End is not null )
+            {
+                await _ffmpegService.TryCutVideo( path, settings.Start.Value, settings.End.Value );
+            }
+            
+            await _ffmpegService.TryAddImage( path, _thumbnailBytes );
             
             return new ServiceReply<bool>( true );
         }

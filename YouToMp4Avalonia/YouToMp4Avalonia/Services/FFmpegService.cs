@@ -7,8 +7,8 @@ namespace YouToMp4Avalonia.Services;
 
 public sealed class FFmpegService
 {
-    readonly FileLogger Logger = FileLogger.Instance;
-
+    // Fields
+    readonly FileLogger _logger = FileLogger.Instance;
     
     const string FFmpegFolderName = "ffmpeg";
     const string FFmpegFileName = "ffmpeg";
@@ -16,7 +16,63 @@ public sealed class FFmpegService
     const string TempThumbnailFileName = "temp_thumbnail.jpg";
     const string TempThumbnailConvertedFileName = "temp_thumbnail_converted.jpg";
     
-    public async Task AddImage( string videoPath, byte[]? _thumbnailBytes )
+    // Public Methods
+    public async Task<bool> TryCutVideo( string videoPath, TimeSpan startTime, TimeSpan endTime )
+    {
+        if ( !GetFFmpegPath( out string ffmpegPath ) )
+        {
+            _logger.LogWithConsole( "Failed to get ffmpeg path!" );
+            return false;   
+        }
+
+        string tempVideoPath = GetTempVideoPath(); // the cut video
+        TimeSpan duration = endTime - startTime; // Calculate duration
+        string args = $"-i \"{videoPath}\" -ss {startTime} -t {duration} -c:v copy -c:a copy \"{tempVideoPath}\""; // ffmpeg arguments
+
+        using Process cutProcess = new();
+        cutProcess.StartInfo.FileName = ffmpegPath;
+        cutProcess.StartInfo.Arguments = args;
+        cutProcess.StartInfo.UseShellExecute = false;
+        cutProcess.StartInfo.RedirectStandardOutput = true;
+        cutProcess.StartInfo.RedirectStandardError = true;
+        cutProcess.StartInfo.CreateNoWindow = true;
+        
+        try
+        {
+            if ( !cutProcess.Start() )
+            {
+                _logger.LogWithConsole( "Failed to start ffmpeg cut process!" );
+                return false;
+            }
+            
+            await cutProcess.WaitForExitAsync();
+
+            string message = await cutProcess.StandardOutput.ReadToEndAsync();
+            string error = await cutProcess.StandardError.ReadToEndAsync();
+            _logger.LogWithConsole( $"FFMPEG CUT MESSAGE: {message}" );
+            _logger.LogWithConsole( $"FFMPEG CUT ERROR: {error}" );
+
+            File.Delete( videoPath ); // Delete original file
+            File.Move( tempVideoPath, videoPath ); // Move the cut video file to original path
+
+            _logger.LogWithConsole( "Video cut successfully!" );
+            return true;
+        }
+        catch ( Exception e )
+        {
+            _logger.LogWithConsole( e, e.Message );
+            return false;
+        }
+        finally
+        {
+            if ( !cutProcess.HasExited )
+            {
+                cutProcess.Kill();
+                _logger.LogWithConsole( "Process was killed manually!" );
+            }
+        }
+    }
+    public async Task TryAddImage( string videoPath, byte[]? _thumbnailBytes )
     {
         if ( _thumbnailBytes is null || !GetFFmpegPath( out string ffmpegPath ) )
             return;
@@ -39,7 +95,7 @@ public sealed class FFmpegService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( e );
+            _logger.LogWithConsole( e );
         }
         finally
         {
@@ -53,6 +109,8 @@ public sealed class FFmpegService
                 File.Delete( tempVideoPath );
         }
     }
+    
+    // Private Utils
     async Task CreateJpgCopyFFMPEG( string inputPath, string outputPath, string ffmpegPath )
     {
         using Process conversionProcess = new();
@@ -70,7 +128,7 @@ public sealed class FFmpegService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( e );
+            _logger.LogWithConsole( e );
         }
         finally
         {
@@ -95,7 +153,7 @@ public sealed class FFmpegService
         }
         catch ( Exception e )
         {
-            Logger.LogWithConsole( e );
+            _logger.LogWithConsole( e );
         }
         finally
         {
@@ -103,7 +161,6 @@ public sealed class FFmpegService
                 createProcess.Kill();
         }
     }
-
     static bool GetFFmpegPath( out string path )
     {
         /*string currentDirectory = Directory.GetCurrentDirectory();
@@ -114,5 +171,11 @@ public sealed class FFmpegService
         string ffmpegFolder = Path.Combine( baseDirectory, FFmpegFolderName );
         path = Path.Combine( ffmpegFolder, FFmpegFileName );
         return File.Exists( path );
+    }
+    static string GetTempVideoPath()
+    {
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine( baseDirectory, TempVideoFileName );
+        //return Path.Combine( Path.GetTempPath(), TempVideoFileName );
     }
 }

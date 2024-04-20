@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -177,8 +178,10 @@ public sealed class MainViewModel : ReactiveObject
         IsVideoSettingsEnabled = false;
         
         // Execute Download
-        ServiceReply<bool> reply = await _dlService!.Download(
-            _settingsManager.Settings.DownloadLocation, streamType, _streamQualities.IndexOf( _selectedStreamQualityName ) );
+        TryParseVideoDlTimes( _streamStartTime, _streamEndTime, out TimeSpan? start, out TimeSpan? end );
+        StreamSettings streamSettings = new( 
+            _settingsManager.Settings.DownloadLocation, streamType, _streamQualities.IndexOf( _selectedStreamQualityName ), start, end );
+        ServiceReply<bool> reply = await _dlService!.Download( streamSettings );
 
         Message = reply.Success
             ? SuccessDownloadMessage
@@ -211,6 +214,23 @@ public sealed class MainViewModel : ReactiveObject
     }
 
     // Private Methods
+    static void TryParseVideoDlTimes( string start, string end, out TimeSpan? startTime, out TimeSpan? endTime )
+    {
+        startTime = null;
+        endTime = null;
+
+        if ( string.IsNullOrWhiteSpace( start ) || string.IsNullOrWhiteSpace( end ) )
+            return;
+
+        if ( !TimeSpan.TryParseExact( start, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out TimeSpan parsedStartTime ) )
+            return;
+
+        if ( !TimeSpan.TryParseExact( end, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out TimeSpan parsedEndTime ) )
+            return;
+
+        startTime = parsedStartTime;
+        endTime = parsedEndTime;
+    }
     static string PrintError( string message )
     {
         return $"{FailDownloadMessage} : {message}";
