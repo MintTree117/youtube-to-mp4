@@ -20,7 +20,7 @@ public sealed class MainViewModel : ReactiveObject
     YoutubeDownloader? _dlService;
     
     // Constants
-    const string DefaultVideoName = "No Video Selected";
+    const string DefaultVideoName = "Download Youtube Videos";
     const string LoadingVideoName = "Loading Video...";
     const string InvalidVideoName = "Invalid Video Link";
     const string SuccessDownloadMessage = "Download success!";
@@ -41,7 +41,6 @@ public sealed class MainViewModel : ReactiveObject
     string _message = string.Empty;
     bool _isLinkBoxEnabled;
     bool _isVideoSettingsEnabled;
-    bool _isDownloadButtonEnabled;
     bool _hasMessage;
 
     // Commands
@@ -95,7 +94,7 @@ public sealed class MainViewModel : ReactiveObject
         get => _videoName;
         set => this.RaiseAndSetIfChanged( ref _videoName, value );
     }
-    public string SelectedStreamType // saves state between downloads for user convenience
+    public string SelectedStreamType
     {
         get => _selectedStreamTypeName;
         set
@@ -103,7 +102,7 @@ public sealed class MainViewModel : ReactiveObject
             this.RaiseAndSetIfChanged( ref _selectedStreamTypeName, value );
             NewStreamCommand.Execute();
         }
-    }
+    } // saves state between downloads for user conveniences
     public string SelectedStreamQuality
     {
         get => _selectedStreamQualityName;
@@ -139,11 +138,6 @@ public sealed class MainViewModel : ReactiveObject
         get => _isVideoSettingsEnabled;
         set => this.RaiseAndSetIfChanged( ref _isVideoSettingsEnabled, value );
     }
-    public bool IsDownloadButtonEnabled
-    {
-        get => _isDownloadButtonEnabled;
-        set => this.RaiseAndSetIfChanged( ref _isDownloadButtonEnabled, value );
-    }
     public bool HasMessage
     {
         get => _hasMessage;
@@ -158,16 +152,8 @@ public sealed class MainViewModel : ReactiveObject
         
         _dlService = new YoutubeDownloader( _youtubeLink );
 
-        Reply<bool> reply = await _dlService.TryInitialize();
-        
-        if ( !reply.Success )
-        {
-            _logger.LogWithConsole( $"Failed to obtain stream manifest! Reply message: {reply.PrintDetails()}" );
-            VideoName = InvalidVideoName;
-            Message = reply.PrintDetails();
-            _dlService = null;
+        if ( !await GetStreamInfo( _dlService ) )
             return;
-        }
 
         IsVideoSettingsEnabled = true;
         VideoName = $"{_dlService.VideoName ?? DefaultVideoName} : Length = {_dlService.VideoDuration}";
@@ -212,6 +198,19 @@ public sealed class MainViewModel : ReactiveObject
     }
 
     // Private Methods
+    async Task<bool> GetStreamInfo( YoutubeDownloader dlService )
+    {
+        Reply<bool> reply = await dlService.TryInitialize();
+
+        if ( reply.Success ) 
+            return true;
+        
+        _logger.LogWithConsole( $"Failed to obtain stream manifest! Reply message: {reply.PrintDetails()}" );
+        VideoName = InvalidVideoName;
+        Message = reply.PrintDetails();
+        _dlService = null;
+        return false;
+    }
     async Task ExecuteDownload( StreamType streamType)
     {
         TryParseVideoDlTimes( _streamStartTime, _streamEndTime, out TimeSpan? start, out TimeSpan? end );
@@ -224,6 +223,22 @@ public sealed class MainViewModel : ReactiveObject
         Message = reply.Success
             ? SuccessDownloadMessage
             : reply.PrintDetails();
+    }
+    async Task HandleNewStreamType()
+    {
+        if ( _dlService is null || !Enum.TryParse( _selectedStreamTypeName, out StreamType streamType ) )
+        {
+            _logger.LogWithConsole( ServiceErrorType.AppError.ToString() );
+            return;
+        }
+
+        List<string> streamQualities = await _dlService.GetStreamInfo( streamType );
+
+        StreamQualities = streamQualities.Count > 0
+            ? streamQualities
+            : [ ];
+
+        SelectedStreamQuality = string.Empty;
     }
     static void TryParseVideoDlTimes( string start, string end, out TimeSpan? startTime, out TimeSpan? endTime )
     {
@@ -241,22 +256,6 @@ public sealed class MainViewModel : ReactiveObject
 
         startTime = parsedStartTime;
         endTime = parsedEndTime;
-    }
-    async Task HandleNewStreamType()
-    {
-        if ( _dlService is null || !Enum.TryParse( _selectedStreamTypeName, out StreamType streamType ) )
-        {
-            _logger.LogWithConsole( ServiceErrorType.AppError.ToString() );
-            return;
-        }
-
-        List<string> streamQualities = await _dlService.GetStreamInfo( streamType );
-
-        StreamQualities = streamQualities.Count > 0
-            ? streamQualities
-            : [ ];
-
-        SelectedStreamQuality = string.Empty;
     }
     void CloseMessage()
     {

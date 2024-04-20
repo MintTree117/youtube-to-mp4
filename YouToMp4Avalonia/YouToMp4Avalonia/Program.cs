@@ -13,6 +13,7 @@ sealed class Program
     // yet and stuff might break.
     [STAThread] public static void Main( string[] args )
     {
+        // Register custom singleton services
         FileLogger.Create();
         SettingsManager.Create();
         

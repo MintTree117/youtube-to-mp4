@@ -2,11 +2,10 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using ReactiveUI;
-using YouToMp4Avalonia.ViewModels;
 
 namespace YouToMp4Avalonia;
 
-public class ViewLocator : IDataTemplate
+public sealed class ViewLocator : IDataTemplate
 {
     public Control? Build( object? data )
     {
@@ -14,7 +13,9 @@ public class ViewLocator : IDataTemplate
             return null;
 
         string name = data.GetType().FullName!.Replace( "ViewModel", "View", StringComparison.Ordinal );
+#pragma warning disable IL2057
         var type = Type.GetType( name );
+#pragma warning restore IL2057
 
         if ( type == null ) 
             return new TextBlock { Text = "Not Found: " + name };

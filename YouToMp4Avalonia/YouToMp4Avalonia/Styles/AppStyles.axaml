@@ -19,40 +19,4 @@
 	<Style Selector="ScrollViewer.bg-popout">
 		<Setter Property="Background" Value="rgba(30, 30, 30, 0.65)" />
 	</Style>
-	
-	<Style Selector="TextBlock.mg-s">
-		<Setter Property="Margin" Value="0,0,0,20" />
-	</Style>
-	<Style Selector="TextBlock.mg-l">
-		<Setter Property="Margin" Value="0,0,0,30" />
-	</Style>
-
-	<Style Selector="TextBox.mg-s">
-		<Setter Property="Margin" Value="0,0,0,20" />
-	</Style>
-	<Style Selector="TextBox.mg-l">
-		<Setter Property="Margin" Value="0,0,0,30" />
-	</Style>
-
-	<Style Selector="ComboBox.mg-s">
-		<Setter Property="Margin" Value="0,0,0,20" />
-	</Style>
-	<Style Selector="ComboBox.mg-l">
-		<Setter Property="Margin" Value="0,0,0,30" />
-	</Style>
-
-	<Style Selector="Button.mg-s">
-		<Setter Property="Margin" Value="0,0,0,20" />
-	</Style>
-	<Style Selector="Button.mg-l">
-		<Setter Property="Margin" Value="0,0,0,30" />
-	</Style>
-	
-	<!-- Separator -->
-	<Style Selector="Border.TitleSeparator">
-		<Setter Property="HorizontalAlignment" Value="Stretch" />
-		<Setter Property="Margin" Value="0 30 0 30" />
-		<Setter Property="BorderThickness" Value="0,0,0,2" />
-		<Setter Property="BorderBrush" Value="#707070" />
-	</Style>
 </Styles>
