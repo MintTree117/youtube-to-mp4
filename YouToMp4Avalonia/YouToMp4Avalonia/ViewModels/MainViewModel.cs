@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -156,7 +157,7 @@ public sealed class MainViewModel : ReactiveObject
             return;
 
         IsVideoSettingsEnabled = true;
-        VideoName = $"{_dlService.VideoName ?? DefaultVideoName} : Length = {_dlService.VideoDuration}";
+        VideoName = ConstructStreamTitleDisplayName();
 
         VideoImageBitmap = _dlService?.ThumbnailBitmap;
         await HandleNewStreamType();
@@ -307,5 +308,17 @@ public sealed class MainViewModel : ReactiveObject
         }
         
         return true;
+    }
+    string ConstructStreamTitleDisplayName()
+    {
+        if ( _dlService is null )
+            return DefaultVideoName;
+
+        StringBuilder builder = new();
+        builder.Append( _dlService.VideoName ?? DefaultVideoName );
+        builder.Append( $" : Author = {_dlService.VideoAuthor ?? "No Author Found"}" );
+        builder.Append( $" : Length = {_dlService.VideoDuration}" );
+
+        return builder.ToString();
     }
 }

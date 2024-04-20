@@ -24,6 +24,7 @@ public sealed class YoutubeDownloader( string videoUrl )
     
     // Stream Data
     public string? VideoName => _video?.Title;
+    public string? VideoAuthor => _video?.Author.ToString();
     public TimeSpan? VideoDuration => _video?.Duration;
     public Bitmap? ThumbnailBitmap { get; private set; }
     StreamManifest? _streamManifest;
