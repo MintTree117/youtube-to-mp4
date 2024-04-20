@@ -15,6 +15,7 @@
         <ScrollViewer>
             <!-- Main Content -->
             <StackPanel VerticalAlignment="Center" MaxWidth="500">
+                
                 <!-- Video Image -->
                 <Border
                     HorizontalAlignment="Center"
@@ -40,6 +41,7 @@
                     FontWeight="Bold"
                     TextWrapping="Wrap"
                     Text="{Binding VideoName}" />
+                
                 <!-- Link Box -->
                 <TextBox
                     HorizontalAlignment="Stretch"
@@ -102,23 +104,14 @@
                     Command="{Binding DownloadStreamCommand}"
                     IsEnabled="{Binding IsVideoSettingsEnabled}"
                     Content="Download" />
+                
                 <!-- Message Box -->
-                <Panel
+                <Grid
+                    ColumnDefinitions="*,Auto"
                     Margin="0,0,0,15"
                     Background="DarkKhaki"
                     IsVisible="{Binding HasMessage}">
-                    <Button
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        ZIndex="1000"
-                        Content="X"
-                        FontWeight="Bold"
-                        Foreground="Black"
-                        Background="Transparent"
-                        IsVisible="{Binding HasMessage}"
-                        Command="{Binding CloseMessageCommand}">
-                    </Button>
-                    <ScrollViewer>
+                    <ScrollViewer Grid.Column="0">
                         <TextBlock
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
@@ -127,7 +120,23 @@
                             IsVisible="{Binding HasMessage}"
                             Text="{Binding Message}" />
                     </ScrollViewer>
-                </Panel>
+                    <Button 
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        ZIndex="1000"
+                        Content="X"
+                        FontWeight="Bold"
+                        FontSize="22"
+                        Margin="0,0,5,0"
+                        Padding="10"
+                        Foreground="White"
+                        Background="Transparent"
+                        IsVisible="{Binding HasMessage}"
+                        Command="{Binding CloseMessageCommand}">
+                    </Button>
+                </Grid>
+                
                 <!-- Settings Box -->
                 <TextBox
                     HorizontalAlignment="Stretch"
