@@ -1,5 +1,9 @@
 # YouTube Downloader Projects
 
+### Hosted Version
+
+You can try the Blazor YouTube Downloader application [here](https://coral-app-anp75.ondigitalocean.app/).
+
 This repository contains two YouTube downloader applications:
 
 1. **Avalonia YouTube Downloader**
