@@ -1,77 +1,79 @@
-# YoutubeToMp4
+# YouTube Downloader Projects
 
-YoutubeToMp4 is a free tool for desktop, Android, and the web that enables you to download YouTube videos to your device.
+This repository contains two YouTube downloader applications:
 
-## Shared Features
+1. **Avalonia YouTube Downloader**
+2. **Blazor YouTube Downloader**
 
-- **FFmpeg Thumbnail Generation:** YoutubeToMp4 can generate thumbnails for all types of downloaded videos.
+## Avalonia YouTube Downloader
 
-- **Quality Selection:** Choose the download quality, offering flexibility between saving data or enjoying high-definition videos.
-- **Video Cutting:** Choose a custom start and end time to cut out of the video and download it, instead of the full video.
+A cross-platform desktop application for Windows and Linux, built with .NET 8 and Avalonia (WPF).
 
-### Desktop/Android Features
+### Features
 
-- **Client-Side Download:** All video conversion is done on the client. For most hardware, this should be much faster than the web, but very low-end/powered devices may slow down.
+#### Technologies Used
 
-### Web Features
+- .NET 8
+- C#
+- Avalonia (WPF)
 
-- **Server-Side Download:** All video conversion is done through a public server (my server), which returns a download to your browser. YouTube currently does not allow browsers to access their API.
-- **Private Access Keys:** The public web server is accessed through a private key.
+#### Architecture
 
-# Web Prerequisites
+- MVVM (Model-View-ViewModel) Pattern
 
-- **.NET 8:** Required to run the application. [Download and install from here](https://dotnet.microsoft.com/download).
-- **FFmpeg:** Required to run the application. [Download and install from here](https://ffmpeg.org/).
+#### Functionality
 
-# Desktop Prerequisites
+- **YouTube Integration:**
+  - Integrates the third-party package `YoutubeExplode` for YouTube video processing.
+  - Allows users to paste YouTube links and select download options.
+  
+- **Download Options:**
+  - Choose between mixed (video + audio), video only, or audio only.
+  - Select desired download quality.
 
-- **.NET 8:** Required to run the application. [Download and install from here](https://dotnet.microsoft.com/download).
-- **FFmpeg:** Required to run the application. [Download and install from here](https://ffmpeg.org/).
+- **Video Editing:**
+  - Enables users to cut videos by specifying start and end times.
+  - Downloads the video thumbnail and uses `ffmpeg` to embed the thumbnail in the `.mp4` file.
+  
+- **Bundled Tools:**
+  - `ffmpeg` is included directly in the application for seamless video processing.
 
-# Android Prerequisites
+### Platforms
 
-- **.NET 8:** Required to run the application. [Download and install from here](https://dotnet.microsoft.com/download).
-- **FFmpeg:** Required to run the application. [Download and install from here](https://ffmpeg.org/).
-- **Android SDK:** Required to run the application on Android. [Download and install from here](https://docs.avaloniaui.net/docs/guides/platforms/android/setting-up-your-developer-environment-for-android).
+- Windows
+- Linux
 
-## Shared Installation Instructions
+## Blazor YouTube Downloader
 
-1. Install prerequisites.
-2. Clone the repository.
-3. Open a terminal in the application's directory appropriate to your platform: ex - YoutubeToMp4Avalonia/YoutubeToMp4.Desktop.
+A web application hosted on Digital Ocean as a Docker container, built with .NET 8 and Blazor.
 
-## Web Installation Instructions
+### Features
 
-4. Publish to your system: `dotnet publish -c Release`
-   - Blazor WASM currently does not allow publishing trimmed.
-5. The content in `bin/Release/publish` is your app, and the executable is an exe file that's the name of the app.
+#### Technologies Used
 
-## Desktop Installation Instructions
+- .NET 8
+- Blazor
+- Docker
+- Hosted on Digital Ocean
 
-4. Publish to your system: `dotnet publish -c Release -p:PublishTrimmed=true /p:AndroidSdkDirectory=/path/to/sdk`
-5. The content in `bin/Release/publish` is your app, and the executable is an exe file that's the name of the app.
+#### Functionality
 
-## Android Installation Instructions
+- **YouTube Integration:**
+  - Integrates the third-party package `YoutubeExplode` for YouTube video processing.
+  - Allows users to paste YouTube links and select download options.
+  
+- **Download Options:**
+  - Choose between mixed (video + audio), video only, or audio only.
+  - Select desired download quality.
 
-4. Publish to your system: `dotnet publish -c Release -p:PublishTrimmed=true /p:AndroidSdkDirectory=/path/to/sdk`
-   - Note publishing trimmed may take very long, like 15-20 minutes, so if you are testing I suggest omitting that part. It is kind of out of my hands... The frameworks I am using are slow to trim.
-5. Build ffmpeg for Android and include it in your publish folder.
-6. The content in `bin/Release/publish` is your app, and the executable is an apk file that's the name of the app.
+- **Video Editing:**
+  - Enables users to cut videos by specifying start and end times.
+  - Downloads the video thumbnail and uses `ffmpeg` to embed the thumbnail in the `.mp4` file.
+  
+- **Bundled Tools:**
+  - `ffmpeg` is included directly in the application for seamless video processing.
 
-## Useful Commands
-
-```
-JAVA ANDROID GENERATE KEY STORE:
-    keytool -genkey -v -keystore my-release-key.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias
-    dotnet publish -f net8.0-android -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=myapp.keystore -p:AndroidSigningKeyAlias=myapp -p:AndroidSigningKeyPass=mypassword -p:AndroidSigningStorePass=mypassword
-    apksigner sign --ks my-release-key.jks --out my_app_signed.apk my_app.apk
-    apksigner sign --ks /home/martin/Desktop/my-release-key.keystore --out my_app_signed.apk com.CompanyName.dlTubeAvaloniaCrossPlatform.apk
-```
-
-## Todo
-
-### macOS
-
-Support for macOS will be available in the future. The macOS build process is quite long and requires a Mac, which I do not currently have.
+- **Server-Side Processing:**
+  - Performs video processing on the server and returns the downloaded file to the user.
 
 
