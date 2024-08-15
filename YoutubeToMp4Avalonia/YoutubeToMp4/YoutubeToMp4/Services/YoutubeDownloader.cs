@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using YoutubeExplode;
+using YoutubeExplode.Converter;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 using YoutubeToMp4.Models;
@@ -32,12 +33,12 @@ public sealed class YoutubeDownloader( string videoUrl )
     byte[]? _thumbnailBytes;
     
     // Streams
-    List<MuxedStreamInfo> _mixedStreams = [ ];
+    //List<MuxedStreamInfo> _mixedStreams = [ ];
     List<AudioOnlyStreamInfo> _audioStreams = [ ];
     List<VideoOnlyStreamInfo> _videoStreams = [ ];
     
     // Stream Qualities
-    List<string>? _mixedSteamQualities;
+    //List<string>? _mixedSteamQualities;
     List<string>? _audioSteamQualities;
     List<string>? _videoSteamQualities;
     
@@ -74,12 +75,16 @@ public sealed class YoutubeDownloader( string videoUrl )
     }
     public async Task<Reply<bool>> Download( StreamSettings settings )
     {
+        if (settings.Type == StreamType.Mixed)
+            return await DownloadMuxed( settings );
+        
         IStreamInfo streamInfo = settings.Type switch
         {
-            StreamType.Mixed => _mixedStreams[ settings.QualityIndex ],
+            //StreamType.Mixed => _mixedStreams[ settings.QualityIndex ],
             StreamType.Audio => _audioStreams[ settings.QualityIndex ],
             StreamType.Video => _videoStreams[ settings.QualityIndex ],
-            _ => _mixedStreams[ settings.QualityIndex ]
+            //_ => _mixedStreams[ settings.QualityIndex ]
+            _ => throw new ArgumentOutOfRangeException()
         };
         
         try
@@ -96,21 +101,8 @@ public sealed class YoutubeDownloader( string videoUrl )
     // Private Utils
     async Task<List<string>> GetMixedStreams()
     {
-        return await Task.Run( () => {
-            if ( _mixedSteamQualities is not null )
-                return _mixedSteamQualities;
-
-            _mixedStreams = _streamManifest!.GetMuxedStreams().ToList();
-            _mixedSteamQualities = [ ];
-
-            for ( int i = 0; i < _mixedStreams.Count; i++ )
-            {
-                MuxedStreamInfo stream = _mixedStreams[ i ];
-                _mixedSteamQualities.Add( $"{i + 1} : {stream.VideoResolution} px - {stream.Bitrate} bps - {stream.Container}" );
-            }
-
-            return _mixedSteamQualities;
-        } );
+        await GetAudioStreams();
+        return await GetVideoStreams();
     }
     async Task<List<string>> GetAudioStreams()
     {
@@ -149,6 +141,65 @@ public sealed class YoutubeDownloader( string videoUrl )
 
             return _videoSteamQualities;
         } );
+    }
+    public async Task<Reply<bool>> DownloadMuxed( StreamSettings settings )
+    {
+        try
+        {
+            // Get highest quality video stream up to 1080p
+            var videoStreamInfo = _videoStreams[settings.QualityIndex];
+
+            if (videoStreamInfo == null)
+                return new Reply<bool>( ServiceErrorType.NotFound, "No suitable video stream found." );
+
+            // Get the highest quality audio stream
+            var audioStreamInfo = _audioStreams[settings.QualityIndex];
+
+            if (audioStreamInfo == null)
+                return new Reply<bool>( ServiceErrorType.NotFound, "No suitable audio stream found." );
+
+            // Download video and audio streams
+            string videoPath = ConstructDownloadPath( settings.Filepath, "mp4" );
+            string audioPath = ConstructDownloadPath( settings.Filepath, "mp3" );
+
+            await _youtubeClient.Videos.Streams.DownloadAsync( videoStreamInfo, videoPath );
+            await _youtubeClient.Videos.Streams.DownloadAsync( audioStreamInfo, audioPath );
+
+            // Merge video and audio using FFmpeg
+            string outputFilePath = ConstructDownloadPath2( settings.Filepath, "mp4" );
+            var mergeResult = await _ffmpegService.MergeAudioAndVideo( videoPath, audioPath, outputFilePath );
+
+            if (!mergeResult.Success)
+                return new Reply<bool>( ServiceErrorType.AppError, "Failed to merge audio and video streams." );
+
+            // Add thumbnail to merged file
+            return await _ffmpegService.TryAddImage( outputFilePath, _thumbnailBytes );
+        }
+        catch ( Exception e )
+        {
+            _logger.LogWithConsole( e );
+            return new Reply<bool>( ServiceErrorType.AppError, e.Message );
+        }
+    }
+    async Task<Reply<bool>> TryDownloadMuxed( StreamSettings settings )
+    {
+        string path = ConstructDownloadPath( settings.Filepath, "mp4" );
+        var streamManifest = await _youtubeClient.Videos.Streams.GetManifestAsync( videoUrl );
+
+        // Select best audio stream (highest bitrate)
+        var audioStreamInfo = streamManifest
+            .GetAudioStreams()
+            .Where( s => s.Container == Container.Mp4 )
+            .GetWithHighestBitrate();
+
+        // Select best video stream (1080p60 in this example)
+        var videoStreamInfo = _videoStreams[settings.QualityIndex];
+
+        // Download and mux streams into a single file
+        var streamInfos = new IStreamInfo[] { audioStreamInfo, videoStreamInfo };
+        await _youtubeClient.Videos.DownloadAsync( streamInfos, new ConversionRequestBuilder( "video.mp4" ).Build() );
+
+        return new Reply<bool>( true );
     }
     async Task<Reply<bool>> TryDownloadStream( StreamSettings settings, IStreamInfo streamInfo )
     {
@@ -191,6 +242,18 @@ public sealed class YoutubeDownloader( string videoUrl )
     {
         string videoName = SanitizeVideoName( _video!.Title );
         string fileName = $"{videoName}.{fileExtension}";
+        return Path.Combine( outputDirectory, fileName );
+
+        static string SanitizeVideoName( string videoName )
+        {
+            return Path.GetInvalidFileNameChars().Aggregate( videoName,
+                ( current, invalidChar ) => current.Replace( invalidChar, '-' ) );
+        }
+    }
+    string ConstructDownloadPath2( string outputDirectory, string fileExtension )
+    {
+        string videoName = SanitizeVideoName( _video!.Title );
+        string fileName = $"boob.{fileExtension}";
         return Path.Combine( outputDirectory, fileName );
 
         static string SanitizeVideoName( string videoName )

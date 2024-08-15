@@ -130,6 +130,60 @@ public sealed class FFmpegService
                 File.Delete( tempVideoPath );
         }
     }
+    public async Task<Reply<bool>> MergeAudioAndVideo( string videoPath, string audioPath, string outputFilePath )
+    {
+        if (!GetFFmpegPath( out string ffmpegPath ))
+        {
+            _logger.LogWithConsole( MessageFailGetFFmpegPath );
+            return new Reply<bool>( ServiceErrorType.IoError, MessageFailGetFFmpegPath );
+        }
+
+        string args = $"-i \"{videoPath}\" -i \"{audioPath}\" -c:v copy -c:a aac -strict experimental \"{outputFilePath}\"";
+
+        using Process mergeProcess = new();
+        mergeProcess.StartInfo.FileName = ffmpegPath;
+        mergeProcess.StartInfo.Arguments = args;
+        mergeProcess.StartInfo.UseShellExecute = false;
+        mergeProcess.StartInfo.RedirectStandardOutput = true;
+        mergeProcess.StartInfo.RedirectStandardError = true;
+        mergeProcess.StartInfo.CreateNoWindow = true;
+
+        try
+        {
+            if (!mergeProcess.Start())
+            {
+                _logger.LogWithConsole( "Failed to start FFmpeg merge process!" );
+                return new Reply<bool>( ServiceErrorType.ExternalError, "Failed to start FFmpeg merge process!" );
+            }
+
+            await mergeProcess.WaitForExitAsync();
+
+            string message = await mergeProcess.StandardOutput.ReadToEndAsync();
+            string error = await mergeProcess.StandardError.ReadToEndAsync();
+            _logger.LogWithConsole( $"FFMPEG MERGE MESSAGE: {message}" );
+            _logger.LogWithConsole( $"FFMPEG MERGE ERROR: {error}" );
+
+            if (mergeProcess.ExitCode != 0)
+            {
+                return new Reply<bool>( ServiceErrorType.ExternalError, $"FFmpeg merge process failed with exit code {mergeProcess.ExitCode}" );
+            }
+
+            return new Reply<bool>( true );
+        }
+        catch ( Exception e )
+        {
+            _logger.LogWithConsole( e, e.Message );
+            return new Reply<bool>( ServiceErrorType.ExternalError, e.Message );
+        }
+        finally
+        {
+            if (!mergeProcess.HasExited)
+            {
+                mergeProcess.Kill();
+                _logger.LogWithConsole( "FFmpeg merge process was killed manually!" );
+            }
+        }
+    }
     
     // Private Utils
     async Task CreateJpgCopyFFMPEG( string inputPath, string outputPath, string ffmpegPath )
@@ -182,6 +236,7 @@ public sealed class FFmpegService
                 createProcess.Kill();
         }
     }
+    
     static bool GetFFmpegPath( out string path )
     {
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
