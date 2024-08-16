@@ -31,17 +31,23 @@ public sealed class MainViewModel : ReactiveObject
     // Property Field List Values
     Bitmap? _videoImageBitmap;
     List<string> _streamTypes = Enum.GetNames<StreamType>().ToList();
-    List<string> _streamQualities = [ ];
+    List<string> _singleStreamQualities = [ ];
+    List<string> _muxedVideoStreamQualities = [];
+    List<string> _muxedAudioStreamQualities = [];
     string _youtubeLink = string.Empty;
     string _videoName = DefaultVideoName;
     string _selectedStreamTypeName = string.Empty; // saves state between downloads for user convenience
     string _selectedStreamQualityName = string.Empty;
-    string _streamStartTime = string.Empty;
-    string _streamEndTime = string.Empty;
+    string _selectedMuxedVideoStreamQualityName = string.Empty;
+    string _selectedMuxedAudioStreamQualityName = string.Empty;
+    /*string _streamStartTime = string.Empty;
+    string _streamEndTime = string.Empty;*/
     string _downloadLocation = string.Empty;
     string _message = string.Empty;
     bool _isLinkBoxEnabled;
-    bool _isVideoSettingsEnabled;
+    bool _isStreamSettingsEnabled;
+    bool _isSingleStreamSettingsEnabled;
+    bool _isMuxedStreamSettingsEnabled;
     bool _hasMessage;
 
     // Commands
@@ -76,10 +82,20 @@ public sealed class MainViewModel : ReactiveObject
         get => _streamTypes;
         set => this.RaiseAndSetIfChanged( ref _streamTypes, value );
     }
-    public List<string> StreamQualities
+    public List<string> SingleStreamQualities
     {
-        get => _streamQualities;
-        set => this.RaiseAndSetIfChanged( ref _streamQualities, value );
+        get => _singleStreamQualities;
+        set => this.RaiseAndSetIfChanged( ref _singleStreamQualities, value );
+    }
+    public List<string> MuxedVideoStreamQualities
+    {
+        get => _muxedVideoStreamQualities;
+        set => this.RaiseAndSetIfChanged( ref _muxedVideoStreamQualities, value );
+    }
+    public List<string> MuxedAudioStreamQualities
+    {
+        get => _muxedAudioStreamQualities;
+        set => this.RaiseAndSetIfChanged( ref _muxedAudioStreamQualities, value );
     }
     public string YoutubeLink
     {
@@ -109,7 +125,17 @@ public sealed class MainViewModel : ReactiveObject
         get => _selectedStreamQualityName;
         set => this.RaiseAndSetIfChanged( ref _selectedStreamQualityName, value );
     }
-    public string StreamStartTime
+    public string SelectedMuxedVideoStreamQuality
+    {
+        get => _selectedMuxedVideoStreamQualityName;
+        set => this.RaiseAndSetIfChanged( ref _selectedMuxedVideoStreamQualityName, value );
+    }
+    public string SelectedMuxedAudioStreamQuality
+    {
+        get => _selectedMuxedAudioStreamQualityName;
+        set => this.RaiseAndSetIfChanged( ref _selectedMuxedAudioStreamQualityName, value );
+    }
+    /*public string StreamStartTime
     {
         get => _streamStartTime;
         set => this.RaiseAndSetIfChanged( ref _streamStartTime, value );
@@ -118,7 +144,7 @@ public sealed class MainViewModel : ReactiveObject
     {
         get => _streamEndTime;
         set => this.RaiseAndSetIfChanged( ref _streamEndTime, value );
-    }
+    }*/
     public string DownloadLocation
     {
         get => _downloadLocation;
@@ -134,10 +160,20 @@ public sealed class MainViewModel : ReactiveObject
         get => _isLinkBoxEnabled;
         set => this.RaiseAndSetIfChanged( ref _isLinkBoxEnabled, value );
     }
-    public bool IsVideoSettingsEnabled
+    public bool IsStreamSettingsEnabled
     {
-        get => _isVideoSettingsEnabled;
-        set => this.RaiseAndSetIfChanged( ref _isVideoSettingsEnabled, value );
+        get => _isStreamSettingsEnabled;
+        set => this.RaiseAndSetIfChanged( ref _isStreamSettingsEnabled, value );
+    }
+    public bool IsSingleStreamSettingsEnabled
+    {
+        get => _isSingleStreamSettingsEnabled;
+        set => this.RaiseAndSetIfChanged( ref _isSingleStreamSettingsEnabled, value );
+    }
+    public bool IsMuxedStreamSettingsEnabled
+    {
+        get => _isMuxedStreamSettingsEnabled;
+        set => this.RaiseAndSetIfChanged( ref _isMuxedStreamSettingsEnabled, value );
     }
     public bool HasMessage
     {
@@ -156,7 +192,7 @@ public sealed class MainViewModel : ReactiveObject
         if ( !await GetStreamInfo( _dlService ) )
             return;
 
-        IsVideoSettingsEnabled = true;
+        IsStreamSettingsEnabled = true;
         VideoName = ConstructStreamTitleDisplayName();
 
         VideoImageBitmap = _dlService?.ThumbnailBitmap;
@@ -164,22 +200,33 @@ public sealed class MainViewModel : ReactiveObject
     }
     async Task DownloadStream()
     {
+        Console.WriteLine( "Reached download stream in view model" );
         if ( !ValidateBeforeTryDownload( out StreamType streamType ) )
             return;
 
-        IsLinkBoxEnabled = false;
-        IsVideoSettingsEnabled = false;
+        Console.WriteLine( "Passed validation" );
 
-        await ExecuteDownload( streamType );
+        IsLinkBoxEnabled = false;
+        IsStreamSettingsEnabled = false;
+        IsMuxedStreamSettingsEnabled = false;
+        IsSingleStreamSettingsEnabled = false;
+
+        if (streamType is not StreamType.Mixed)
+            await ExecuteSingleDownload( streamType );
+        else
+            await ExecuteMuxedDownload();
+
+        Console.WriteLine( "Executed" );
 
         HasMessage = true;
         IsLinkBoxEnabled = true;
-        IsVideoSettingsEnabled = true;
+        IsStreamSettingsEnabled = true;
+        DisplayCorrectStreamSettings();
     }
     async Task UpdateSettings()
     {
         IsLinkBoxEnabled = false;
-        IsVideoSettingsEnabled = false;
+        IsStreamSettingsEnabled = false;
 
         AppSettingsModel settingsModel = new()
         {
@@ -195,7 +242,8 @@ public sealed class MainViewModel : ReactiveObject
         }
         
         IsLinkBoxEnabled = true;
-        IsVideoSettingsEnabled = true;
+        IsStreamSettingsEnabled = true;
+        DisplayCorrectStreamSettings();
     }
 
     // Private Methods
@@ -212,14 +260,27 @@ public sealed class MainViewModel : ReactiveObject
         _dlService = null;
         return false;
     }
-    async Task ExecuteDownload( StreamType streamType)
+    async Task ExecuteSingleDownload( StreamType streamType )
     {
-        TryParseVideoDlTimes( _streamStartTime, _streamEndTime, out TimeSpan? start, out TimeSpan? end );
-        
-        StreamSettings streamSettings = new(
-            _settingsManager.Settings.DownloadLocation, streamType, _streamQualities.IndexOf( _selectedStreamQualityName ), start, end );
-        
-        Reply<bool> reply = await _dlService!.Download( streamSettings );
+        SingleStreamSettings singleStreamSettings = new(
+            _settingsManager.Settings.DownloadLocation, 
+            streamType, 
+            _singleStreamQualities.IndexOf( _selectedStreamQualityName ) );
+
+        Reply<bool> reply = await _dlService!.DownloadSingle( singleStreamSettings );
+
+        Message = reply.Success
+            ? SuccessDownloadMessage
+            : reply.PrintDetails();
+    }
+    async Task ExecuteMuxedDownload()
+    {
+        MuxedStreamSettings muxedStreamSettings = new(
+            _settingsManager.Settings.DownloadLocation,
+            _muxedVideoStreamQualities.IndexOf( _selectedMuxedVideoStreamQualityName ),
+            _muxedAudioStreamQualities.IndexOf( _selectedMuxedAudioStreamQualityName ) );
+
+        Reply<bool> reply = await _dlService!.DownloadMuxed( muxedStreamSettings );
 
         Message = reply.Success
             ? SuccessDownloadMessage
@@ -232,16 +293,37 @@ public sealed class MainViewModel : ReactiveObject
             _logger.LogWithConsole( ServiceErrorType.AppError.ToString() );
             return;
         }
+        
+        DisplayCorrectStreamSettings();
 
-        List<string> streamQualities = await _dlService.GetStreamInfo( streamType );
+        if (IsMuxedStreamSettingsEnabled)
+        {
+            List<string> videoStreamQualities = await _dlService.GetStreamInfo( StreamType.Video );
+            List<string> audioStreamQualities = await _dlService.GetStreamInfo( StreamType.Audio );
 
-        StreamQualities = streamQualities.Count > 0
-            ? streamQualities
-            : [ ];
+            MuxedVideoStreamQualities = videoStreamQualities.Count > 0
+                ? videoStreamQualities
+                : [];
 
-        SelectedStreamQuality = string.Empty;
+            MuxedAudioStreamQualities = audioStreamQualities.Count > 0
+                ? audioStreamQualities
+                : [];
+
+            SelectedMuxedVideoStreamQuality = string.Empty;
+            SelectedMuxedAudioStreamQuality = string.Empty;
+        }
+        else
+        {
+            List<string> streamQualities = await _dlService.GetStreamInfo( streamType );
+
+            SingleStreamQualities = streamQualities.Count > 0
+                ? streamQualities
+                : [];
+
+            SelectedStreamQuality = string.Empty;
+        }
     }
-    static void TryParseVideoDlTimes( string start, string end, out TimeSpan? startTime, out TimeSpan? endTime )
+    /*static void TryParseVideoDlTimes( string start, string end, out TimeSpan? startTime, out TimeSpan? endTime )
     {
         startTime = null;
         endTime = null;
@@ -257,7 +339,7 @@ public sealed class MainViewModel : ReactiveObject
 
         startTime = parsedStartTime;
         endTime = parsedEndTime;
-    }
+    }*/
     void CloseMessage()
     {
         HasMessage = false;
@@ -267,12 +349,14 @@ public sealed class MainViewModel : ReactiveObject
         bool linkIsEmpty = string.IsNullOrWhiteSpace( _youtubeLink );
 
         LoadDefaultImage();
-        IsVideoSettingsEnabled = false;
+        IsStreamSettingsEnabled = false;
+        IsSingleStreamSettingsEnabled = false;
+        IsMuxedStreamSettingsEnabled = false;
         HasMessage = false;
         SelectedStreamType = string.Empty;
         Message = string.Empty;
         VideoName = linkIsEmpty ? DefaultVideoName : LoadingVideoName;
-        StreamQualities = [ ];
+        SingleStreamQualities = [ ];
         _dlService = null;
 
         return linkIsEmpty;
@@ -292,6 +376,7 @@ public sealed class MainViewModel : ReactiveObject
             HasMessage = true;
             return false;
         }
+        
         // Invalid Selected Stream Type
         if ( !Enum.TryParse( _selectedStreamTypeName, out streamType ) )
         {
@@ -299,14 +384,39 @@ public sealed class MainViewModel : ReactiveObject
             HasMessage = true;
             return false;
         }
+
+        return streamType is StreamType.Mixed 
+            ? ValidateDownloadMuxed() 
+            : ValidateDownloadSingle();
+    }
+    bool ValidateDownloadSingle()
+    {
         // Invalid Selected Stream Quality
-        if ( !_streamQualities.Contains( _selectedStreamQualityName ) )
+        if (_singleStreamQualities.Contains( _selectedStreamQualityName )) 
+            return true;
+        
+        Message = "Invalid Stream Quality!";
+        HasMessage = true;
+        return false;
+    }
+    bool ValidateDownloadMuxed()
+    {
+        // Invalid Selected Video Quality
+        if (!_muxedVideoStreamQualities.Contains( _selectedMuxedVideoStreamQualityName ))
         {
-            Message = "Invalid Stream Quality!";
+            Message = "Invalid Video Quality!";
             HasMessage = true;
             return false;
         }
-        
+
+        // Invalid Selected Audio Quality
+        if (!_muxedAudioStreamQualities.Contains( _selectedMuxedAudioStreamQualityName ))
+        {
+            Message = "Invalid Audio Quality!";
+            HasMessage = true;
+            return false;
+        }
+
         return true;
     }
     string ConstructStreamTitleDisplayName()
@@ -320,5 +430,13 @@ public sealed class MainViewModel : ReactiveObject
         builder.Append( $" : Length = {_dlService.VideoDuration}" );
 
         return builder.ToString();
+    }
+    void DisplayCorrectStreamSettings()
+    {
+        var mixed = Enum.TryParse( _selectedStreamTypeName, out StreamType type )
+            && type is StreamType.Mixed;
+        
+        IsSingleStreamSettingsEnabled = !mixed;
+        IsMuxedStreamSettingsEnabled = mixed;
     }
 }

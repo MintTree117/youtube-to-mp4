@@ -50,6 +50,7 @@
                     Watermark="Paste link here"
                     Text="{Binding YoutubeLink}" 
                     IsEnabled="{Binding IsLinkBoxEnabled} "/>
+                
                 <!-- Stream Type -->
                 <ComboBox
                     HorizontalAlignment="Stretch" 
@@ -58,19 +59,40 @@
                     PlaceholderText="Select a stream type"
                     ItemsSource="{Binding StreamTypes}" 
                     SelectedItem="{Binding SelectedStreamType}"
-                    IsEnabled="{Binding IsVideoSettingsEnabled}" />
-                <!-- Quality -->
+                    IsEnabled="{Binding IsStreamSettingsEnabled}" />
+                
+                <!-- Quality Single -->
                 <ComboBox
                     HorizontalAlignment="Stretch"
                     Margin="0,0,0,15"
                     Padding="20,20,20,20"
-                    PlaceholderText="Select a stream quality"
-                    ItemsSource="{Binding StreamQualities}" 
+                    PlaceholderText="Select a download quality"
+                    ItemsSource="{Binding SingleStreamQualities}" 
                     SelectedItem="{Binding SelectedStreamQuality}"
-                    IsEnabled="{Binding IsVideoSettingsEnabled}" />
+                    IsEnabled="{Binding IsSingleStreamSettingsEnabled}" />
+                
+                <!-- Quality Muxed Video -->
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,15"
+                    Padding="20,20,20,20"
+                    PlaceholderText="Select a video quality"
+                    ItemsSource="{Binding MuxedVideoStreamQualities}"
+                    SelectedItem="{Binding SelectedMuxedVideoStreamQuality}"
+                    IsEnabled="{Binding IsMuxedStreamSettingsEnabled}" />
+
+                <!-- Quality Muxed Audio -->
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,15"
+                    Padding="20,20,20,20"
+                    PlaceholderText="Select an audio quality"
+                    ItemsSource="{Binding MuxedAudioStreamQualities}"
+                    SelectedItem="{Binding SelectedMuxedAudioStreamQuality}"
+                    IsEnabled="{Binding IsMuxedStreamSettingsEnabled}" />
                 
                 <!-- Cut Times Grid -->
-                <Grid 
+                <!--<Grid 
                     ColumnDefinitions="*,Auto,*"
                     Margin="0,0,0,15">
                     <TextBox Grid.Column="0"
@@ -79,7 +101,7 @@
                         Padding="20,20,20,20"
                         Watermark="From: hh:mm:ss"
                         Text="{Binding StreamStartTime}"
-                        IsEnabled="{Binding IsVideoSettingsEnabled} " />
+                        IsEnabled="{Binding IsSingleStreamSettingsEnabled} " />
                     <Image 
                         Grid.Column="1"
                         Margin="5,0">
@@ -91,8 +113,8 @@
                         Padding="20,20,20,20"
                         Watermark="To: hh:mm:ss"
                         Text="{Binding StreamEndTime}"
-                        IsEnabled="{Binding IsVideoSettingsEnabled} " />
-                </Grid>
+                        IsEnabled="{Binding IsSingleStreamSettingsEnabled} " />
+                </Grid>-->
                 
                 <!-- Submit -->
                 <Button
@@ -102,7 +124,7 @@
                     Padding="30,20"
                     Background="MediumAquamarine"
                     Command="{Binding DownloadStreamCommand}"
-                    IsEnabled="{Binding IsVideoSettingsEnabled}"
+                    IsEnabled="{Binding IsStreamSettingsEnabled}"
                     Content="Download" />
                 
                 <!-- Message Box -->

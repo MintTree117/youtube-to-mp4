@@ -17,8 +17,8 @@ public sealed class YoutubeDownloader( string videoUrl )
     // Services
     readonly FileLogger _logger = FileLogger.Instance;
     readonly HttpService _httpService = new();
-    readonly FFmpegService _ffmpegService = new();
     readonly YoutubeClient _youtubeClient = new();
+    //readonly FFmpegService _ffmpegService = new();
     
     // Video Url From Constructor
     readonly string _videoUrl = videoUrl;
@@ -30,7 +30,7 @@ public sealed class YoutubeDownloader( string videoUrl )
     public Bitmap? ThumbnailBitmap { get; private set; }
     StreamManifest? _streamManifest;
     Video? _video;
-    byte[]? _thumbnailBytes;
+    //byte[]? _thumbnailBytes;
     
     // Streams
     //List<MuxedStreamInfo> _mixedStreams = [ ];
@@ -73,23 +73,43 @@ public sealed class YoutubeDownloader( string videoUrl )
             _ => await GetMixedStreams()
         };
     }
-    public async Task<Reply<bool>> Download( StreamSettings settings )
+    public async Task<Reply<bool>> DownloadSingle( SingleStreamSettings settings )
     {
-        if (settings.Type == StreamType.Mixed)
-            return await DownloadMuxed( settings );
-        
-        IStreamInfo streamInfo = settings.Type switch
-        {
-            //StreamType.Mixed => _mixedStreams[ settings.QualityIndex ],
-            StreamType.Audio => _audioStreams[ settings.QualityIndex ],
-            StreamType.Video => _videoStreams[ settings.QualityIndex ],
-            //_ => _mixedStreams[ settings.QualityIndex ]
+        IStreamInfo streamInfo = settings.Type switch {
+            StreamType.Audio => _audioStreams[settings.QualityIndex],
+            StreamType.Video => _videoStreams[settings.QualityIndex],
             _ => throw new ArgumentOutOfRangeException()
         };
         
         try
         {
-            return await TryDownloadStream( settings, streamInfo );
+            string path = ConstructDownloadPath( settings.Filepath, streamInfo.Container.Name );
+            await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
+            return new Reply<bool>( true );
+        }
+        catch ( Exception e )
+        {
+            _logger.LogWithConsole( e );
+            return new Reply<bool>( ServiceErrorType.AppError, e.Message );
+        }
+    }
+    public async Task<Reply<bool>> DownloadMuxed( MuxedStreamSettings settings )
+    {
+        try
+        {
+            Console.WriteLine( "Reached Downloader" );
+            await GetVideoStreams();
+            await GetAudioStreams();
+            Console.WriteLine( "Got Stream Info" );
+
+            var video = _videoStreams[settings.VideoQualityIndex];
+            var audio = _audioStreams[settings.AudioQualityIndex];
+            var path = ConstructDownloadPath( settings.Filepath, "mp4" );
+            var streamInfos = new IStreamInfo[] { audio, video };
+            Console.WriteLine( "About To Download" );
+            await _youtubeClient.Videos.DownloadAsync( streamInfos, new ConversionRequestBuilder( path ).Build() );
+            Console.WriteLine( "Downloaded" );
+            return new Reply<bool>( true );
         }
         catch ( Exception e )
         {
@@ -142,81 +162,7 @@ public sealed class YoutubeDownloader( string videoUrl )
             return _videoSteamQualities;
         } );
     }
-    public async Task<Reply<bool>> DownloadMuxed( StreamSettings settings )
-    {
-        try
-        {
-            // Get highest quality video stream up to 1080p
-            var videoStreamInfo = _videoStreams[settings.QualityIndex];
-
-            if (videoStreamInfo == null)
-                return new Reply<bool>( ServiceErrorType.NotFound, "No suitable video stream found." );
-
-            // Get the highest quality audio stream
-            var audioStreamInfo = _audioStreams[settings.QualityIndex];
-
-            if (audioStreamInfo == null)
-                return new Reply<bool>( ServiceErrorType.NotFound, "No suitable audio stream found." );
-
-            // Download video and audio streams
-            string videoPath = ConstructDownloadPath( settings.Filepath, "mp4" );
-            string audioPath = ConstructDownloadPath( settings.Filepath, "mp3" );
-
-            await _youtubeClient.Videos.Streams.DownloadAsync( videoStreamInfo, videoPath );
-            await _youtubeClient.Videos.Streams.DownloadAsync( audioStreamInfo, audioPath );
-
-            // Merge video and audio using FFmpeg
-            string outputFilePath = ConstructDownloadPath2( settings.Filepath, "mp4" );
-            var mergeResult = await _ffmpegService.MergeAudioAndVideo( videoPath, audioPath, outputFilePath );
-
-            if (!mergeResult.Success)
-                return new Reply<bool>( ServiceErrorType.AppError, "Failed to merge audio and video streams." );
-
-            // Add thumbnail to merged file
-            return await _ffmpegService.TryAddImage( outputFilePath, _thumbnailBytes );
-        }
-        catch ( Exception e )
-        {
-            _logger.LogWithConsole( e );
-            return new Reply<bool>( ServiceErrorType.AppError, e.Message );
-        }
-    }
-    async Task<Reply<bool>> TryDownloadMuxed( StreamSettings settings )
-    {
-        string path = ConstructDownloadPath( settings.Filepath, "mp4" );
-        var streamManifest = await _youtubeClient.Videos.Streams.GetManifestAsync( videoUrl );
-
-        // Select best audio stream (highest bitrate)
-        var audioStreamInfo = streamManifest
-            .GetAudioStreams()
-            .Where( s => s.Container == Container.Mp4 )
-            .GetWithHighestBitrate();
-
-        // Select best video stream (1080p60 in this example)
-        var videoStreamInfo = _videoStreams[settings.QualityIndex];
-
-        // Download and mux streams into a single file
-        var streamInfos = new IStreamInfo[] { audioStreamInfo, videoStreamInfo };
-        await _youtubeClient.Videos.DownloadAsync( streamInfos, new ConversionRequestBuilder( "video.mp4" ).Build() );
-
-        return new Reply<bool>( true );
-    }
-    async Task<Reply<bool>> TryDownloadStream( StreamSettings settings, IStreamInfo streamInfo )
-    {
-        string path = ConstructDownloadPath( settings.Filepath, streamInfo.Container.Name );
-
-        await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
-        
-        if ( settings.Start is null || settings.End is null )
-            return await _ffmpegService.TryAddImage( path, _thumbnailBytes );
-
-        Reply<bool> cutResult = await _ffmpegService.TryCutVideo( path, settings.Start.Value, settings.End.Value );
-
-        if ( !cutResult.Success )
-            return cutResult;
-
-        return await _ffmpegService.TryAddImage( path, _thumbnailBytes );
-    }
+    
     async Task LoadStreamThumbnailImage( string url )
     {
         Reply<Stream?> reply = await _httpService.TryGetStream( url );
@@ -236,7 +182,7 @@ public sealed class YoutubeDownloader( string videoUrl )
         await reply.Data.DisposeAsync();
 
         memoryStream.Position = 0;
-        _thumbnailBytes = memoryStream.ToArray();
+        //_thumbnailBytes = memoryStream.ToArray();
     }
     string ConstructDownloadPath( string outputDirectory, string fileExtension )
     {
@@ -246,20 +192,7 @@ public sealed class YoutubeDownloader( string videoUrl )
 
         static string SanitizeVideoName( string videoName )
         {
-            return Path.GetInvalidFileNameChars().Aggregate( videoName,
-                ( current, invalidChar ) => current.Replace( invalidChar, '-' ) );
-        }
-    }
-    string ConstructDownloadPath2( string outputDirectory, string fileExtension )
-    {
-        string videoName = SanitizeVideoName( _video!.Title );
-        string fileName = $"boob.{fileExtension}";
-        return Path.Combine( outputDirectory, fileName );
-
-        static string SanitizeVideoName( string videoName )
-        {
-            return Path.GetInvalidFileNameChars().Aggregate( videoName,
-                ( current, invalidChar ) => current.Replace( invalidChar, '-' ) );
+            return Path.GetInvalidFileNameChars().Aggregate( videoName, static ( current, invalidChar ) => current.Replace( invalidChar, '-' ) );
         }
     }
 }
