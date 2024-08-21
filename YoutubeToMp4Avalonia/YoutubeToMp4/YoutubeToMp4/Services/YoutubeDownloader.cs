@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using YoutubeExplode;
+using YoutubeExplode.Common;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
@@ -18,7 +19,7 @@ public sealed class YoutubeDownloader( string videoUrl )
     readonly FileLogger _logger = FileLogger.Instance;
     readonly HttpService _httpService = new();
     readonly YoutubeClient _youtubeClient = new();
-    //readonly FFmpegService _ffmpegService = new();
+    readonly FFmpegService _ffmpegService = new();
     
     // Video Url From Constructor
     readonly string _videoUrl = videoUrl;
@@ -30,15 +31,13 @@ public sealed class YoutubeDownloader( string videoUrl )
     public Bitmap? ThumbnailBitmap { get; private set; }
     StreamManifest? _streamManifest;
     Video? _video;
-    //byte[]? _thumbnailBytes;
+    byte[]? _thumbnailBytes;
     
     // Streams
-    //List<MuxedStreamInfo> _mixedStreams = [ ];
     List<AudioOnlyStreamInfo> _audioStreams = [ ];
     List<VideoOnlyStreamInfo> _videoStreams = [ ];
     
     // Stream Qualities
-    //List<string>? _mixedSteamQualities;
     List<string>? _audioSteamQualities;
     List<string>? _videoSteamQualities;
     
@@ -51,7 +50,9 @@ public sealed class YoutubeDownloader( string videoUrl )
             _video = await _youtubeClient.Videos.GetAsync( _videoUrl );
             
             // Get Video Image Data
-            await LoadStreamThumbnailImage( _video.Thumbnails.Count > 0 ? _video.Thumbnails[ 0 ].Url : "" );
+            var thumbnail = _video.Thumbnails.TryGetWithHighestResolution();
+            if (thumbnail is not null)
+                await LoadStreamThumbnailImage( thumbnail.Url );
 
             return _streamManifest is not null && _video is not null
                 ? new Reply<bool>( true )
@@ -59,7 +60,7 @@ public sealed class YoutubeDownloader( string videoUrl )
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e );
+            Console.WriteLine( e );
             return new Reply<bool>( ServiceErrorType.ServerError, e.Message );
         }
     }
@@ -84,12 +85,23 @@ public sealed class YoutubeDownloader( string videoUrl )
         try
         {
             string path = ConstructDownloadPath( settings.Filepath, streamInfo.Container.Name );
+
+            Console.WriteLine( $"Starting {settings.Type} download..." );
+            
             await _youtubeClient.Videos.Streams.DownloadAsync( streamInfo, path );
+
+            Console.WriteLine( $"{settings.Type} downloaded." );
+            
+            var imageResult = await _ffmpegService.TryAddImage( path, _thumbnailBytes );
+
+            Console.WriteLine( !imageResult.Success ? $"Failed to add image thumbnail. {imageResult.Message}" : "Thumbnail added." );
+            Console.WriteLine( $"Finished download process. {path}" );
+            
             return new Reply<bool>( true );
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e );
+            Console.WriteLine( e );
             return new Reply<bool>( ServiceErrorType.AppError, e.Message );
         }
     }
@@ -106,14 +118,24 @@ public sealed class YoutubeDownloader( string videoUrl )
             var audio = _audioStreams[settings.AudioQualityIndex];
             var path = ConstructDownloadPath( settings.Filepath, "mp4" );
             var streamInfos = new IStreamInfo[] { audio, video };
-            Console.WriteLine( "About To Download" );
+            
+            Console.WriteLine( "Starting muxed download..." );
+            
             await _youtubeClient.Videos.DownloadAsync( streamInfos, new ConversionRequestBuilder( path ).Build() );
-            Console.WriteLine( "Downloaded" );
+
+            Console.WriteLine( "Muxed downloaded." );
+            Console.WriteLine( "Starting thumbnail processing..." );
+            
+            var imageResult = await _ffmpegService.TryAddImage( path, _thumbnailBytes );
+
+            Console.WriteLine( !imageResult.Success ? $"Failed to add image thumbnail. {imageResult.Message}" : "Thumbnail added." );
+            Console.WriteLine( $"Finished download process. {path}" );
+            
             return new Reply<bool>( true );
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e );
+            Console.WriteLine( e );
             return new Reply<bool>( ServiceErrorType.AppError, e.Message );
         }
     }
@@ -163,13 +185,13 @@ public sealed class YoutubeDownloader( string videoUrl )
         } );
     }
     
-    async Task LoadStreamThumbnailImage( string url )
+    async Task LoadStreamThumbnailImage( string thumbnailUrl )
     {
-        Reply<Stream?> reply = await _httpService.TryGetStream( url );
+        var reply = await _httpService.TryGetStream( thumbnailUrl );
 
         if ( !reply.Success || reply.Data is null )
         {
-            _logger.LogWithConsole( $"Failed to load thumbnail image! : {reply.PrintDetails()}" );
+            Console.WriteLine( $"Failed to load thumbnail image! : {reply.PrintDetails()}" );
             return;
         }
 
@@ -182,7 +204,7 @@ public sealed class YoutubeDownloader( string videoUrl )
         await reply.Data.DisposeAsync();
 
         memoryStream.Position = 0;
-        //_thumbnailBytes = memoryStream.ToArray();
+        _thumbnailBytes = memoryStream.ToArray();
     }
     string ConstructDownloadPath( string outputDirectory, string fileExtension )
     {

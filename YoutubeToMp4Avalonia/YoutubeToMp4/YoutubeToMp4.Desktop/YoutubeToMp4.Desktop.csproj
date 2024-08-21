@@ -21,12 +21,18 @@
         <PackageReference Include="YoutubeExplode.Converter" Version="6.4.0" />
     </ItemGroup>
 
-    <ItemGroup>
-        <!-- Include ffmpeg folder and its contents -->
+    <!--<ItemGroup>
         <None Update="bin/Debug/net8.0/ffmpeg\**\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>-->
+
+    <ItemGroup>
+        <None Update="ffmpeg/ffmpeg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+
 
     <ItemGroup>
         <ProjectReference Include="..\YoutubeToMp4\YoutubeToMp4.csproj" />

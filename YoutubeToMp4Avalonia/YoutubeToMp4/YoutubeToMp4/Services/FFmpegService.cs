@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -28,7 +28,7 @@ public sealed class FFmpegService
     {
         if ( !GetFFmpegPath( out string ffmpegPath ) )
         {
-            _logger.LogWithConsole( MessageFailGetFFmpegPath );
+            Console.WriteLine( MessageFailGetFFmpegPath );
             return new Reply<bool>( ServiceErrorType.IoError, MessageFailGetFFmpegPath );   
         }
 
@@ -56,8 +56,8 @@ public sealed class FFmpegService
 
             string message = await cutProcess.StandardOutput.ReadToEndAsync();
             string error = await cutProcess.StandardError.ReadToEndAsync();
-            _logger.LogWithConsole( $"FFMPEG CUT MESSAGE: {message}" );
-            _logger.LogWithConsole( $"FFMPEG CUT ERROR: {error}" );
+            Console.WriteLine( $"FFMPEG CUT MESSAGE: {message}" );
+            Console.WriteLine( $"FFMPEG CUT ERROR: {error}" );
 
             File.Delete( videoPath ); // Delete original file
             File.Move( tempVideoPath, videoPath ); // Move the cut video file to original path
@@ -66,7 +66,7 @@ public sealed class FFmpegService
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e, e.Message );
+            Console.WriteLine( e );
             return new Reply<bool>( ServiceErrorType.ExternalError, e.Message );
         }
         finally
@@ -74,7 +74,7 @@ public sealed class FFmpegService
             if ( !cutProcess.HasExited )
             {
                 cutProcess.Kill();
-                _logger.LogWithConsole( MessageManualKillProcess );
+                Console.WriteLine( MessageManualKillProcess );
             }
         }
     }
@@ -134,7 +134,7 @@ public sealed class FFmpegService
     {
         if (!GetFFmpegPath( out string ffmpegPath ))
         {
-            _logger.LogWithConsole( MessageFailGetFFmpegPath );
+            Console.WriteLine( MessageFailGetFFmpegPath );
             return new Reply<bool>( ServiceErrorType.IoError, MessageFailGetFFmpegPath );
         }
 
@@ -158,21 +158,16 @@ public sealed class FFmpegService
 
             await mergeProcess.WaitForExitAsync();
 
-            string message = await mergeProcess.StandardOutput.ReadToEndAsync();
-            string error = await mergeProcess.StandardError.ReadToEndAsync();
-            _logger.LogWithConsole( $"FFMPEG MERGE MESSAGE: {message}" );
-            _logger.LogWithConsole( $"FFMPEG MERGE ERROR: {error}" );
+            var message = await mergeProcess.StandardOutput.ReadToEndAsync();
+            var error = await mergeProcess.StandardError.ReadToEndAsync();
 
-            if (mergeProcess.ExitCode != 0)
-            {
-                return new Reply<bool>( ServiceErrorType.ExternalError, $"FFmpeg merge process failed with exit code {mergeProcess.ExitCode}" );
-            }
-
-            return new Reply<bool>( true );
+            return mergeProcess.ExitCode != 0 
+                ? new Reply<bool>( ServiceErrorType.ExternalError, $"FFmpeg merge process failed with exit code {mergeProcess.ExitCode} : {message} : {error}" ) 
+                : new Reply<bool>( true );
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e, e.Message );
+            Console.WriteLine( e );
             return new Reply<bool>( ServiceErrorType.ExternalError, e.Message );
         }
         finally
@@ -180,13 +175,13 @@ public sealed class FFmpegService
             if (!mergeProcess.HasExited)
             {
                 mergeProcess.Kill();
-                _logger.LogWithConsole( "FFmpeg merge process was killed manually!" );
+                Console.WriteLine( "FFmpeg merge process was killed manually!" );
             }
         }
     }
     
     // Private Utils
-    async Task CreateJpgCopyFFMPEG( string inputPath, string outputPath, string ffmpegPath )
+    static async Task CreateJpgCopyFFMPEG( string inputPath, string outputPath, string ffmpegPath )
     {
         using Process conversionProcess = new();
         conversionProcess.StartInfo.FileName = ffmpegPath;
@@ -203,7 +198,7 @@ public sealed class FFmpegService
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e );
+            Console.WriteLine( e );
         }
         finally
         {
@@ -225,10 +220,14 @@ public sealed class FFmpegService
         {
             createProcess.Start();
             await createProcess.WaitForExitAsync();
+            string message = await createProcess.StandardOutput.ReadToEndAsync();
+            string error = await createProcess.StandardError.ReadToEndAsync();
+            Console.WriteLine( $"FFmpeg Output: {message}" );
+            Console.WriteLine($"FFmpeg Error: {error}");
         }
         catch ( Exception e )
         {
-            _logger.LogWithConsole( e );
+            Console.WriteLine( e );
         }
         finally
         {
@@ -242,6 +241,7 @@ public sealed class FFmpegService
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         string ffmpegFolder = Path.Combine( baseDirectory, FFmpegFolderName );
         path = Path.Combine( ffmpegFolder, FFmpegFileName );
+        Console.WriteLine($"FFmpeg path: {path}");
         return File.Exists( path );
     }
     static string GetTempVideoPath()
@@ -249,4 +249,4 @@ public sealed class FFmpegService
         string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         return Path.Combine( baseDirectory, TempVideoFileName );
     }
-}*/
+}
