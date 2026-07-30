@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
+using ReactiveUI.Primitives;
 using YoutubeToMp4.Models;
 using YoutubeToMp4.Services;
 
@@ -51,18 +50,14 @@ public sealed class MainViewModel : ReactiveObject
     bool _hasMessage;
 
     // Commands
-    public ReactiveCommand<Unit, Unit> DownloadStreamCommand { get; }
-    public ReactiveCommand<Unit, Unit> SettingsCommand { get; }
-    public ReactiveCommand<Unit, Unit> CloseMessageCommand { get; }
-    ReactiveCommand<Unit, Unit> HandleNewLinkCommand { get; }
-    ReactiveCommand<Unit, Unit> NewStreamCommand { get; }
+    public ReactiveCommand<RxVoid, RxVoid> DownloadStreamCommand { get; }
+    public ReactiveCommand<RxVoid, RxVoid> SettingsCommand { get; }
+    public ReactiveCommand<RxVoid, RxVoid> CloseMessageCommand { get; }
     
     // Constructor
     public MainViewModel()
     {
-        HandleNewLinkCommand = ReactiveCommand.CreateFromTask( HandleNewLink );
         DownloadStreamCommand = ReactiveCommand.CreateFromTask( DownloadStream );
-        NewStreamCommand = ReactiveCommand.CreateFromTask( HandleNewStreamType );
         SettingsCommand = ReactiveCommand.CreateFromTask( UpdateSettings );
         CloseMessageCommand = ReactiveCommand.Create( CloseMessage );
         
@@ -103,7 +98,7 @@ public sealed class MainViewModel : ReactiveObject
         set
         {
             this.RaiseAndSetIfChanged( ref _youtubeLink, value );
-            HandleNewLinkCommand.Execute();
+            _ = HandleNewLink();
         }
     }
     public string VideoName
@@ -117,7 +112,7 @@ public sealed class MainViewModel : ReactiveObject
         set
         {
             this.RaiseAndSetIfChanged( ref _selectedStreamTypeName, value );
-            NewStreamCommand.Execute();
+            _ = HandleNewStreamType();
         }
     } // saves state between downloads for user conveniences
     public string SelectedStreamQuality

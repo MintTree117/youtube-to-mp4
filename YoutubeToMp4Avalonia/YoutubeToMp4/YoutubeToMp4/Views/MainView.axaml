@@ -48,8 +48,8 @@
                     Margin="0,0,0,15"
                     Padding="20,20,20,20"
                     Watermark="Paste link here"
-                    Text="{Binding YoutubeLink}" 
-                    IsEnabled="{Binding IsLinkBoxEnabled} "/>
+                    Text="{Binding YoutubeLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding IsLinkBoxEnabled}"/>
                 
                 <!-- Stream Type -->
                 <ComboBox
